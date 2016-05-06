@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.22
+// @version        12.0.23
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.22";
+var version = "12.0.23";
 
 /*
 
@@ -34,7 +34,11 @@ function xpCookie(name){
 }
 
 numberfy = function (variable){
-	return parseFloat(String(variable).replace(/[\s\$\%]/g, "")) || 0;
+	if(String(variable) === 'Не огр.' || String(variable) === 'Unlim.') {
+		return Number.POSITIVE_INFINITY;
+	} else {
+		return parseFloat(String(variable).replace(/[\s\$\%]/g, "")) || 0;
+	}
 }
 
 var ls = localStorage;
@@ -110,6 +114,7 @@ function map(html, url, page){
 			parcel: $html.find("input[type=type]").map( function(i, e){ return numberfy($(e).val()); }).get(),
 			required : $html.find(".inner_table").length? $html.find(".list td:nth-child(3).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(2) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			stock : $html.find(".inner_table").length? $html.find(".list td:nth-child(4).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(3) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			available : $html.find(".inner_table").length? $html.find(".list td:nth-child(5).inner_table tr:nth-child(4) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(8) table tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			offer : $html.find(".destroy").map( function(i, e){ return numberfy($(e).val()); }).get(),
 			reprice : $html.find(".inner_table").length? $html.find("td:nth-child(5) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter("[class]").length; }).get() : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get(),
 		}
@@ -1056,6 +1061,18 @@ function prodSupply(type, subid, choice){
 	});	
 	
 	function phase(){
+		console.log('choice[0] = ' + choice[0]);
+		console.log('mapped[url].isProd = ' + mapped[url].isProd);
+		console.log('mapped[url].stock = ' + mapped[url].stock);
+		console.log('mapped[url].offer = ' + mapped[url].offer);
+		console.log('mapped[url].reprice = ' + mapped[url].reprice);
+		console.log('mapped[url].available = ' + mapped[url].available);
+
+		// console.log('mapped[url].parcel.length = ' + mapped[url].parcel.length);
+		// console.log(mapped[url].parcel);
+		// console.log('mapped[url].required.length = ' + mapped[url].required.length);
+		// console.log(mapped[url].required);
+
 		if(choice[0] >= 2 && !mapped[url].isProd){
 			xGet(url2, "consume", false, function(){
 				post();
@@ -1069,15 +1086,21 @@ function prodSupply(type, subid, choice){
 	function post(){
 		
 		var change = [];
-		
+
 		if(mapped[url].parcel.length !== mapped[url].required.length){
 			choice[0] = 1;
 			postMessage("Subdivision <a href="+url+">"+subid+"</a> is missing a supplier, or has too many suppliers!");
 		}
-		
+
+		for(var i = 0; i < mapped[url].parcel.length; i++){
+			if(mapped[url].available[i] < mapped[url].required[i]){
+				choice[0] = 1;
+				postMessage("Subdivision <a href="+url+">"+subid+"</a> has insufficient reserves at the supplier!");
+				break;
+			}
+		}
 		
 		for(var i = 0; i < mapped[url].parcel.length; i++){
-			
 			var newsupply = 0;
 			if(choice[0] === 1){
 				newsupply = 0;
