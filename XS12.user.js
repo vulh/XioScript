@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.21
+// @version        12.0.22
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.21";
+var version = "12.0.22";
 
 /*
 
@@ -625,6 +625,7 @@ var subType = {
 	repair: [0.2, 0.2, "/img/qualification/car.png"],
 	fuel: [0.2, 0.2, "/img/qualification/car.png"],
 	service: [0.12, 0.12, "/img/qualification/service.png"],
+	service_light: [0.12, 0.12, "/img/qualification/service.png"],
 	office: [0.08, 0.08, "/img/qualification/management.png"]
 }
 
@@ -1552,7 +1553,8 @@ function equipment(type, subid, choice){
 				break;
 			}
 		}
-		
+
+		console.log('phase2 equip.black = ' + equip.black);
 		if (   
 			equip.black > 0
 			|| choice[1] === 1 && equip.red > 0
@@ -1609,7 +1611,18 @@ function equipment(type, subid, choice){
 	function post(){
 			
 		var equipWear = 0;
-		
+		console.log('choice[1] = ' + choice[1]);
+		console.log('equip.black = ' + equip.black);
+		console.log('equip.red = ' + equip.red);
+		console.log('equip.perc = ' + equip.perc);
+		console.log('equip.required = ' + equip.required);
+		console.log('equip.quality = ' + equip.quality);
+		console.log('equip.type = ' + equip.type);
+
+		if(equip.required < equip.quality * 0.9) {
+			equip.required = equip.quality;
+		}
+
 		if(choice[1] === 0){
 			equipWear = equip.black;
 		}
@@ -1631,6 +1644,8 @@ function equipment(type, subid, choice){
 			
 			var qualReq = (equip.required || 0) + 0.005;
 			var qualNow = equip.quality - 0.005;
+			console.log('qualReq = ' + qualReq);
+			console.log('qualNow = ' + qualNow);
 			
 			for(var i = 0; i < mapped[url].offer.length; i++){
 				var data = {
@@ -1640,7 +1655,8 @@ function equipment(type, subid, choice){
 					buy : 0,
 					offer : mapped[url].offer[i],
 					index : i
-				}				
+				}
+				// console.log('data.quality = ' + data.quality );
 				if(data.quality < qualReq){
 					offer.low.push(data);
 				}
@@ -1659,15 +1675,21 @@ function equipment(type, subid, choice){
 			var h = 0;
 			var qualEst = 0;
 			var qualNew = qualNow;
+			console.log('offer.low.length = ' + offer.low.length);
+			console.log('offer.high.length = ' + offer.high.length);
 			
 			while(equipWear > 0 && h < offer.high.length){
+				// console.log('l = ' + l);
+				// console.log('h = ' + h);
 
 				if(offer.low[l] && offer.low[l].length > l && offer.low[l].available - offer.low[l].buy === 0){
 					l++;
+					// console.log('continue l');
 					continue;
 				}				
 				if(offer.high[h] && offer.high[h].length > h && offer.high[h].available - offer.high[h].buy === 0){
 					h++;
+					// console.log('continue h');
 					continue;
 				}
 				
