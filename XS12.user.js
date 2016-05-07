@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.23
+// @version        12.0.24
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.23";
+var version = "12.0.24";
 
 /*
 
@@ -121,7 +121,7 @@ function map(html, url, page){
 	}
 	else if(page === "consume"){
 		mapped[url] = {
-			consump : $html.find(".list td:nth-last-child(1) div:nth-child(1)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+			consump : $html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
 		}
 	}
 	else if(page === "storesupply"){
