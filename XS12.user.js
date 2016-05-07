@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.24
+// @version        12.0.25
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.24";
+var version = "12.0.25";
 
 /*
 
@@ -121,7 +121,9 @@ function map(html, url, page){
 	}
 	else if(page === "consume"){
 		mapped[url] = {
-			consump : $html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+			consump : $html.find(".list td:nth-last-child(1) div:nth-child(3)").length
+						? $html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+						: $html.find(".list td:nth-last-child(1) div:nth-child(1)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
 		}
 	}
 	else if(page === "storesupply"){
@@ -1061,17 +1063,6 @@ function prodSupply(type, subid, choice){
 	});	
 	
 	function phase(){
-		console.log('choice[0] = ' + choice[0]);
-		console.log('mapped[url].isProd = ' + mapped[url].isProd);
-		console.log('mapped[url].stock = ' + mapped[url].stock);
-		console.log('mapped[url].offer = ' + mapped[url].offer);
-		console.log('mapped[url].reprice = ' + mapped[url].reprice);
-		console.log('mapped[url].available = ' + mapped[url].available);
-
-		// console.log('mapped[url].parcel.length = ' + mapped[url].parcel.length);
-		// console.log(mapped[url].parcel);
-		// console.log('mapped[url].required.length = ' + mapped[url].required.length);
-		// console.log(mapped[url].required);
 
 		if(choice[0] >= 2 && !mapped[url].isProd){
 			xGet(url2, "consume", false, function(){
