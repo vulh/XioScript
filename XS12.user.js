@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.25
+// @version        12.0.26
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.25";
+var version = "12.0.26";
 
 /*
 
@@ -2092,31 +2092,28 @@ function prodBooster(type, subid, choice){
 	function post(){
 		
 		for(var artid in mapped[urlAjax]){
-			if(mapped[urlAjax][artid].symbol === "20225555.gif" && numberfy(mapped[urlAjax][artid].size) === mapped[url].size){
+			if(mapped[urlAjax][artid].symbol === "20221659.gif" && numberfy(mapped[urlAjax][artid].size) === mapped[url].size){
+				if(choice[0] === 2){
+
+					var costs = numberfy(mapped[urlAjax][artid].initial_cost) / numberfy(mapped[urlAjax][artid].ttl) + numberfy(mapped[urlAjax][artid].cost_per_turn);
+					var savings = mapped[urlFinance].energy / 2;
+
+					if(costs >= savings){
+						xTypeDone(type);
+						return false;
+					}
+
+				}
+
+				xGet("/"+realm+"/ajax/unit/artefact/attach/?unit_id="+subid+"&artefact_id="+artid+"&slot_id=300139", "none", false, function(){
+					xTypeDone(type);
+				});
+
 				break;
 			}
 		}
-				
-		if(choice[0] === 2){
-			
-			var costs = numberfy(mapped[urlAjax][artid].initial_cost) / numberfy(mapped[urlAjax][artid].ttl) + numberfy(mapped[urlAjax][artid].cost_per_turn);
-			var savings = mapped[urlFinance].energy / 2;
-			
-			if(costs >= savings){
-				xTypeDone(type);
-				return false;
-			}			
-			
-		}	
-		
-		xGet("/"+realm+"/ajax/unit/artefact/attach/?unit_id="+subid+"&artefact_id="+artid+"&slot_id=300139", "none", false, function(){			
-			xTypeDone(type);
-		});
-		
 	}
-	
-	
-	
+
 }
 
 function research(type, subid, choice){
