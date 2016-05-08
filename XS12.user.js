@@ -1037,8 +1037,7 @@ function salePolicy(type, subid, choice){
 					mapped[url].form.find("select:even").eq(i).find("option").eq(policy).attr("selected", true);			
 				}
 			}
-		};
-
+		}
 		if(change){
 			xPost(url, mapped[url].form.serialize(), function(){
 				xTypeDone(type);
@@ -2926,8 +2925,7 @@ function preference(policies){
 		newPolicyString = "";
 		for(var i = 0; i < savedPolicies.length; i++){
 			newPolicyString += ";"+savedPolicies[i] + savedPolicyChoices[i];
-		};
-		
+		}
 		ls["x"+realm+subid] = newPolicyString.substring(1);
 	}).each(function(){
 		$(this).trigger("change");
@@ -3330,8 +3328,7 @@ function XioGenerator(subids){
 				newPolicyString = "";
 				for(var i = 0; i < savedPolicies.length; i++){
 					newPolicyString += ";"+savedPolicies[i] + savedPolicyChoices[i];
-				};
-				
+				}
 				ls["x"+realm+subid] = newPolicyString.substring(1);
 			}
 			
@@ -3547,8 +3544,7 @@ function XioOverview(){
 					newPolicyString = "";
 					for(var j = 0; j < savedPolicies.length; j++){
 						newPolicyString += ";"+savedPolicies[j] + savedPolicyChoices[j];
-					};
-								
+					}
 					ls["x"+realm+subid] = newPolicyString.substring(1);
 					
 				}
