@@ -116,7 +116,7 @@ function map(html, url, page){
 			stock : $html.find(".inner_table").length? $html.find(".list td:nth-child(4).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(3) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			available : $html.find(".inner_table").length? $html.find(".list td:nth-child(5).inner_table tr:nth-child(4) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(8) table tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			offer : $html.find(".destroy").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			reprice : $html.find(".inner_table").length? $html.find("td:nth-child(5) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter("[class]").length; }).get() : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get(),
+			reprice : $html.find(".inner_table").length? $html.find("td:nth-child(5) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter("[class]").length; }).get() : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get()
 		}
 	}
 	else if(page === "consume"){
@@ -222,7 +222,7 @@ function map(html, url, page){
 			onHoliday : !!$html.find("[href$=unset]").length,
 			isStore : !!$html.find("[href$=trading_hall]").length,
 			departments : numberfy($html.find("tr:contains('Number of departments') td:eq(1)").text()),
-			visitors: numberfy($html.find("tr:contains('Number of visitors') td:eq(1)").text()),
+			visitors: numberfy($html.find("tr:contains('Number of visitors') td:eq(1)").text())
 		}
 	}
 	else if(page === "salary"){
@@ -244,7 +244,7 @@ function map(html, url, page){
 			weekcost : numberfy($html.find("#educationCost").text()),
 			employees : numberfy($html.find("#unitEmployeesData_employees").val()),	
 			skillNow : numberfy($html.find(".list span:eq(0)").text()),			
-			skillCity : numberfy($html.find(".list span:eq(1)").text()),
+			skillCity : numberfy($html.find(".list span:eq(1)").text())
 		}	
 	}
 	else if(page === "equipment"){
@@ -300,7 +300,7 @@ function map(html, url, page){
 			myself : $html.find("tr:has(input)[class]").map( function(i, e){ return !!$(e).find("strong").length; }).get(),
 			contractAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return $(e).attr("href"); }).get(),	
 			idAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+$/)[0]); }).get(),	
-			typeAdd : $html.find(".add_contract img").map( function(i, e){ return $(e).attr("alt"); }).get(),
+			typeAdd : $html.find(".add_contract img").map( function(i, e){ return $(e).attr("alt"); }).get()
 		}
 	}	
 	else if(page === "contract"){
@@ -348,7 +348,7 @@ function map(html, url, page){
 	}
 	else if(page === "financeitem"){
 		mapped[url] = {
-			energy : numberfy($html.find(".list tr:has(span[style]) td:eq(1)").text()),
+			energy : numberfy($html.find(".list tr:has(span[style]) td:eq(1)").text())
 		}
 	}
 	else if(page === "size"){
@@ -364,7 +364,7 @@ function map(html, url, page){
 			full : numberfy($html.find("[nowrap]:eq(0)").text()),
 			product : $html.find(".grid td:nth-child(1)").map( function(i, e){ return $(e).text(); }).get(),
 			stock : $html.find(".grid td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			shipments : $html.find(".grid td:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),			
+			shipments : $html.find(".grid td:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get()
 		}
 	}
 	else if(page === "ads"){
@@ -1824,7 +1824,7 @@ function equipment(type, subid, choice){
 			var offer = {
 				low : [],
 				mid : [],
-				high : [],
+				high : []
 			};
 			
 			var qualNow = equip.quality + 0.005;
