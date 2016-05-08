@@ -39,7 +39,7 @@ numberfy = function (variable){
 	} else {
 		return parseFloat(String(variable).replace(/[\s\$\%]/g, "")) || 0;
 	}
-}
+};
 
 var ls = localStorage;
 var realm = xpCookie('last_realm');
@@ -78,7 +78,7 @@ function map(html, url, page){
 		return false;
 	}	
 	
-	var $html = $(html)
+	var $html = $(html);
 	if(page === "unitlist"){
 		mapped[url] = {
 			subids : $html.find(".unit-list-2014 td:nth-child(1)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -634,7 +634,7 @@ var subType = {
 	service: [0.12, 0.12, "/img/qualification/service.png"],
 	service_light: [0.12, 0.12, "/img/qualification/service.png"],
 	office: [0.08, 0.08, "/img/qualification/management.png"]
-}
+};
 
 function salePrice(type, subid, choice){	
 	var url = "/"+realm+"/main/unit/view/"+subid+"/sale";
@@ -1518,8 +1518,8 @@ function equipment(type, subid, choice){
 	var urlMain = "/"+realm+"/main/unit/view/"+subid;
 	var urlSalary = "/"+realm+"/window/unit/employees/engage/"+subid;
 	var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
-	var urlEquipment = "/"+realm+"/main/company/view/"+companyid+"/unit_list/equipment"
-	var urlAnimals = "/"+realm+"/main/company/view/"+companyid+"/unit_list/animals"
+	var urlEquipment = "/"+realm+"/main/company/view/"+companyid+"/unit_list/equipment";
+	var urlAnimals = "/"+realm+"/main/company/view/"+companyid+"/unit_list/animals";
 	
 	var getcount = 0;
 	var equip = {};
@@ -1670,7 +1670,7 @@ function equipment(type, subid, choice){
 					buy : 0,
 					offer : mapped[url].offer[i],
 					index : i
-				}
+				};
 				// console.log('data.quality = ' + data.quality );
 				if(data.quality < qualReq){
 					offer.low.push(data);
@@ -1753,7 +1753,7 @@ function equipment(type, subid, choice){
 					buy : 0,
 					offer : mapped[url].offer[i],
 					index : i
-				}				
+				};
 				if(data.quality > qualReq){
 					offer.inc.push(data);
 				}
@@ -1838,7 +1838,7 @@ function equipment(type, subid, choice){
 					buy : 0,
 					offer : mapped[url].offer[i],
 					index : i
-				}				
+				};
 				if(data.quality < qualNow){
 					offer.low.push(data);
 				}
@@ -2222,7 +2222,7 @@ function research(type, subid, choice){
 					var index = -1;
 					for(var i = 0; i < effi.length; i++){
 						if(efficient < effi[i].efficiency * effi[i].load){
-							efficient = effi[i].efficiency * effi[i].load
+							efficient = effi[i].efficiency * effi[i].load;
 							index = i;
 						}
 					}
@@ -2598,7 +2598,7 @@ function wareSize(type, subid, choice){
 	});
 	
 	
-	var min, max
+	var min, max;
 	
 	if(choice[0] === 1){
 		min = 69/5;
@@ -3120,7 +3120,7 @@ function XioMaintenance(subids, allowedPolicies){
 				
 	$("#topblock").append(tablestring);	
 		
-	urlUnitlist = "/"+realm+"/main/company/view/"+companyid+"/unit_list"
+	urlUnitlist = "/"+realm+"/main/company/view/"+companyid+"/unit_list";
 	var filtersetting = $(".u-s").attr("href") || "/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithProduction/class=0/size=0/type=" + $(".unittype").val();
 	xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithProduction/20000", "none", false, function(){
 		xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithProduction/class=0/type=0", "none", false, function(){
@@ -3147,7 +3147,7 @@ function XioMaintenance(subids, allowedPolicies){
 			}
 			var savedPolicyStrings = ls["x"+realm+subids[i]]? ls["x"+realm+subids[i]].split(";") : [];
 			for(var j = 0; j < savedPolicyStrings.length; j++){	
-				var policy = policyJSON[savedPolicyStrings[j].substring(0, 2)]
+				var policy = policyJSON[savedPolicyStrings[j].substring(0, 2)];
 				var choice = savedPolicyStrings[j].substring(2);
 								
 				choice = choice.split("-");
@@ -3409,7 +3409,7 @@ function XioOverview(){
 				continue;
 			}
 			
-			var htmlstring = ""
+			var htmlstring = "";
 			for(var k = 0; k < policy.order.length; k++){
 				
 				if(k >= 1){
@@ -3542,7 +3542,7 @@ function XioOverview(){
 					var option = savedPolicies.indexOf(name);
 					var split = savedPolicyChoices[option].split("-");
 					split[choice] = index;
-					savedPolicyChoices[option] = split.join("-")
+					savedPolicyChoices[option] = split.join("-");
 					
 					newPolicyString = "";
 					for(var j = 0; j < savedPolicies.length; j++){
@@ -3621,7 +3621,7 @@ function XioExport(){
 	$(".XioProperty").remove();
 	$("#topblock").append("<br class=XioProperty><textarea id=XEarea class=XioProperty style='width: 900px'></textarea>");
 	
-	var string = ""
+	var string = "";
 	for(var key in ls){
 		var patt = new RegExp("x"+realm+"\\d+");
 		if(patt.test(key)){
@@ -3832,7 +3832,7 @@ function topManagerStats(){
 
 function buildingShortener(){
 	$( document ).ajaxSuccess(function( event, xhr, settings ) {
-		var newUrl = $(xhr.responseText).find("#mainContent form").attr("action")
+		var newUrl = $(xhr.responseText).find("#mainContent form").attr("action");
 		
 		var $form = $("form:eq(1)");
 
@@ -3934,5 +3934,5 @@ document.onreadystatechange = function () {
     if (document.readyState == "complete") {
         XioScript();
     }
-}
+};
 document.onreadystatechange();
