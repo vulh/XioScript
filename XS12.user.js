@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.26
+// @version        12.0.27
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.26";
+var version = "12.0.27";
 
 /*
 
@@ -1568,7 +1568,7 @@ function equipment(type, subid, choice){
 			}
 		}
 
-		console.log('phase2 equip.black = ' + equip.black);
+		// console.log('phase2 equip.black = ' + equip.black);
 		if (   
 			equip.black > 0
 			|| choice[1] === 1 && equip.red > 0
@@ -1625,13 +1625,13 @@ function equipment(type, subid, choice){
 	function post(){
 			
 		var equipWear = 0;
-		console.log('choice[1] = ' + choice[1]);
-		console.log('equip.black = ' + equip.black);
-		console.log('equip.red = ' + equip.red);
-		console.log('equip.perc = ' + equip.perc);
-		console.log('equip.required = ' + equip.required);
-		console.log('equip.quality = ' + equip.quality);
-		console.log('equip.type = ' + equip.type);
+		// console.log('choice[1] = ' + choice[1]);
+		// console.log('equip.black = ' + equip.black);
+		// console.log('equip.red = ' + equip.red);
+		// console.log('equip.perc = ' + equip.perc);
+		// console.log('equip.required = ' + equip.required);
+		// console.log('equip.quality = ' + equip.quality);
+		// console.log('equip.type = ' + equip.type);
 
 		if(equip.required < equip.quality * 0.9) {
 			equip.required = equip.quality;
@@ -1654,12 +1654,13 @@ function equipment(type, subid, choice){
 			var offer = {
 				low : [],
 				high : [],
+				inc : []
 			};
 			
 			var qualReq = (equip.required || 0) + 0.005;
 			var qualNow = equip.quality - 0.005;
-			console.log('qualReq = ' + qualReq);
-			console.log('qualNow = ' + qualNow);
+			// console.log('qualReq = ' + qualReq);
+			// console.log('qualNow = ' + qualNow);
 			
 			for(var i = 0; i < mapped[url].offer.length; i++){
 				var data = {
@@ -1689,8 +1690,8 @@ function equipment(type, subid, choice){
 			var h = 0;
 			var qualEst = 0;
 			var qualNew = qualNow;
-			console.log('offer.low.length = ' + offer.low.length);
-			console.log('offer.high.length = ' + offer.high.length);
+			// console.log('offer.low.length = ' + offer.low.length);
+			// console.log('offer.high.length = ' + offer.high.length);
 			
 			while(equipWear > 0 && h < offer.high.length){
 				// console.log('l = ' + l);
@@ -1743,10 +1744,6 @@ function equipment(type, subid, choice){
 					}
 				}
 			}
-			
-			var offer = {
-				inc : []
-			};
 			
 			for(var i = 0; i < mapped[url].offer.length; i++){
 				var data = {
