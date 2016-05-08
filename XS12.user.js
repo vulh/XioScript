@@ -2564,7 +2564,7 @@ function advertisement(type, subid, choice){
 			var manager = mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex];
 			var multiplier = [1, 2, 5, 10, 20, 50];
 			budget = Math.round(mapped[url].pop * pccost * multiplier[choice[0]-4]);
-			maxbudget = Math.floor(200010 * Math.pow(manager, 1.4));
+			var maxbudget = Math.floor(200010 * Math.pow(manager, 1.4));
 			budget = Math.min(budget, maxbudget);
 			data = "advertData%5Btype%5D%5B%5D=2264&advertData%5BtotalCost%5D="+budget;
 		}
