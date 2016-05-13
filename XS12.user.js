@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.27
+// @version        12.0.28
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.27";
+var version = "12.0.28";
 
 /*
 
@@ -726,7 +726,7 @@ function salePrice(type, subid, choice){
 			var primecost = choice[1] ? mapped[url].outprime[i] : mapped[url].stockprime[i];
 			var quality = choice[1] ? mapped[url].outqual[i] : mapped[url].stockqual[i];
 			var price = 0;
-			
+
 			if(choice[0] === 2){
 				price = 0.01;
 			}
@@ -977,7 +977,7 @@ function retailPrice(type, subid, choice){
 			var prime = Math.round(mapped[url].purch[i] * multiplier[choice[1]]);
 			price = Math.max(price, prime);
 			
-			if(mapped[url].price[i] !== price){
+			if(mapped[url].price[i] !== price && price > 0){
 				change = true;
 				data += "&" + encodeURI(mapped[url].name[i] + "=" + price);
 			}		
