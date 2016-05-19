@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.28
+// @version        12.0.29
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.28";
+var version = "12.0.29";
 
 /*
 
@@ -2026,7 +2026,7 @@ function technology(type, subid, choice){
 			var newTech = 0;
 			
 			for(var i = mapped[url].price.length - 1; i >= 0; i--){
-				if(mapped[url].price[i] === "$0.00" && (i+1) <= techLevel && (i+1) > mapped[url].tech){
+				if(mapped[url].price[i] === "$0.00" && (i+1) <= techLevel && (i+1) > mapped[url].tech && mapped[url].tech > 0){
 					newTech = i+1;
 					change = true;
 					break;
