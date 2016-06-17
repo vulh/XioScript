@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.29
+// @version        12.0.30
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.29";
+var version = "12.0.30";
 
 /*
 
@@ -40,6 +40,21 @@ numberfy = function (variable){
 		return parseFloat(String(variable).replace(/[\s\$\%]/g, "")) || 0;
 	}
 };
+function zipAndMin(napArr1, napArr2){
+	var zipped = napArr1.map(function (e, i) {
+		return [napArr1[i], napArr2[i]];
+	});
+	var res = zipped.map(function (e, i) {
+		if (e[0] == 0) {
+			return e[1];
+		} else if (e[1] == 0) {
+			return e[0];
+		} else {
+			return Math.min(e[0], e[1]);
+		}
+	});
+	return res;
+}
 
 var ls = localStorage;
 var realm = xpCookie('last_realm');
@@ -121,9 +136,10 @@ function map(html, url, page){
 	}
 	else if(page === "consume"){
 		mapped[url] = {
-			consump : $html.find(".list td:nth-last-child(1) div:nth-child(3)").length
-						? $html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
-						: $html.find(".list td:nth-last-child(1) div:nth-child(1)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+			consump : zipAndMin(
+						$html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+					   ,$html.find(".list td:nth-last-child(1) div:nth-child(1)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
+					)
 		}
 	}
 	else if(page === "storesupply"){
@@ -1074,7 +1090,7 @@ function prodSupply(type, subid, choice){
 	}
 	
 	function post(){
-		
+
 		var change = [];
 
 		if(mapped[url].parcel.length !== mapped[url].required.length){
