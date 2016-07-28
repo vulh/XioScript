@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.32
+// @version        12.0.33
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.32";
+var version = "12.0.33";
 
 /*
 
@@ -41,19 +41,25 @@ numberfy = function (variable){
 	}
 };
 function zipAndMin(napArr1, napArr2){
-	var zipped = napArr1.map(function (e, i) {
-		return [napArr1[i], napArr2[i]];
-	});
-	var res = zipped.map(function (e, i) {
-		if (e[0] == 0) {
-			return e[1];
-		} else if (e[1] == 0) {
-			return e[0];
-		} else {
-			return Math.min(e[0], e[1]);
-		}
-	});
-	return res;
+	if (napArr1.length > napArr2.length){
+		return napArr1;
+	} else if (napArr2.length > napArr1.length){
+		return napArr2;
+	} else {
+		var zipped = napArr1.map(function (e, i) {
+			return [napArr1[i], napArr2[i]];
+		});
+		var res = zipped.map(function (e, i) {
+			if (e[0] == 0) {
+				return e[1];
+			} else if (e[1] == 0) {
+				return e[0];
+			} else {
+				return Math.min(e[0], e[1]);
+			}
+		});
+		return res;
+	}
 }
 
 var ls = localStorage;
