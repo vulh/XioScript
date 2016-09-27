@@ -2,7 +2,7 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.34
+// @version        12.0.35
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
@@ -286,9 +286,9 @@ function map(html, url, page){
 	}
 	else if(page === "manager"){
 		mapped[url] = {
-			base : $html.find("input:text[readonly]").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			bonus : $html.find(".grid:eq(1) td:nth-child(5)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			pic : $html.find(".grid img").map( function(i, e){ return $(e).attr("src"); }).get()
+			base : $html.find(".qual_item .mainValue").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			bonus : $html.find(".qual_item .bonusValue").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			pic : $html.find(".qual_item img").map( function(i, e){ return $(e).attr("src"); }).get()
 		}
 	}
 	else if(page === "tech"){
