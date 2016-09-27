@@ -9,7 +9,7 @@
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.34";
+var version = "12.0.35";
 
 /*
 
