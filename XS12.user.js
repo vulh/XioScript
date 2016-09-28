@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.35
+// @version        12.0.36
 // @author		   XiozZe
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http://*virtonomic*.*/*/*
 // @exclude        http://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.35";
+var version = "12.0.36";
 
 /*
 
@@ -129,15 +129,38 @@ function map(html, url, page){
 		}
 	}
 	else if(page === "prodsupply"){
-		mapped[url] = { 
+		mapped[url] = $html.find(".inner_table").length? {  //new interface
 			isProd : !$html.find(".sel").next().attr("class"),
-			form : $html.find("[name=supplyContractForm]"),
-			parcel: $html.find("input[type=type]").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			required : $html.find(".inner_table").length? $html.find(".list td:nth-child(3).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(2) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			stock : $html.find(".inner_table").length? $html.find(".list td:nth-child(4).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(3) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			available : $html.find(".inner_table").length? $html.find(".list td:nth-child(5).inner_table tr:nth-child(4) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get() : $html.find(".list td:nth-child(8) table tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			parcel : $html.find(".quickchange").map( function(i, e){ return numberfy($(e).val()); }).get(),
+			required : $html.find(".list td:nth-child(3).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			stock : $html.find(".list td:nth-child(4).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			basequality : $html.find(".list td:nth-child(4).inner_table tr:nth-child(2) td:nth-child(2)[align]").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			prodid : $html.find(".list tr:has([src='/img/supplier_add.gif']) > td:nth-child(1) a").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+/)[0]); }).get(),
 			offer : $html.find(".destroy").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			reprice : $html.find(".inner_table").length? $html.find("td:nth-child(5) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter("[class]").length; }).get() : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get()
+			price : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(2) td:nth-child(3)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			quality : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(3) td:nth-child(3)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			available : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(4) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			maximum : $html.find(".list td:has(.quicksave)").map( function(i, e){ return $(e).find("[style='color: red;']").length? numberfy($(e).find("[style='color: red;']").text().match(/(\d|\s)+/)[0]) : Infinity; }).get(),
+			reprice : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter(".ordered_red, .ordered_green").length; }).get(),
+			mainrow : $html.find(".list tr[onmouseover]").map( function(i, e){ return !!$(e).find("[alt='Select supplier']").length; }).get(),
+			nosupplier : $html.find(".list tr[onmouseover]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
+			img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0]
+		} : { //old interface
+			isProd : !$html.find(".sel").next().attr("class"),
+			parcel : $html.find("input[type=type]").map( function(i, e){ return numberfy($(e).val()); }).get(),
+			required : $html.find(".list td:nth-child(2) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			stock : $html.find(".list td:nth-child(3) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			basequality : $html.find(".list td:nth-child(3) table tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			prodid : $html.find(".list a:has(img)[title]").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+/)[0]); }).get(),
+			offer : $html.find(".destroy").map( function(i, e){ return numberfy($(e).val()); }).get(),
+			price : $html.find("[id^=totalPrice] tr:nth-child(1) td:nth-child(3)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			quality : $html.find("[id^=totalPrice] tr:nth-child(3) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			available : $html.find("[id^=quantity] tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+			maximum : $html.find(".list td:has([type=type])").map( function(i, e){ return $(e).find("[style='color:red']").length? numberfy($(e).find("[style='color:red']").text().match(/(\d|\s)+/)[0]) : Infinity; }).get(),
+			reprice : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get(),
+			mainrow : $html.find(".list tr[id]").map( function(i, e){ return !/sub/.test($(e).attr("id")); }).get(),
+			nosupplier : $html.find(".list tr[id]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
+			img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0]
 		}
 	}
 	else if(page === "consume"){
