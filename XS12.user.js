@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.38
+// @version        12.0.39
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.38";
+var version = "12.0.39";
 
 /*
 
@@ -975,22 +975,6 @@ function servicePrice(type, subid, choice){
             if(choice[0] === 1){
                 var priceOld = mapped[mapped[url].history[i]].price[0];
                 var priceOlder = mapped[mapped[url].history[i]].price[1];
-                var turnOld = mapped[mapped[url].history[i]].quantity[0] * priceOld;
-                var turnOlder = mapped[mapped[url].history[i]].quantity[1] * priceOlder;
-
-                if(!priceOld){
-                    price = 0;
-                }
-                else if(!priceOlder){
-                    price = priceOld * 1.03;
-                }
-                else{
-                    price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
-                }
-            }
-            else if(choice[0] === 2){
-                var priceOld = mapped[mapped[url].history[i]].price[0];
-                var priceOlder = mapped[mapped[url].history[i]].price[1];
                 var saleOld = mapped[mapped[url].history[i]].quantity[0];
                 var saleOlder = mapped[mapped[url].history[i]].quantity[1];
 
@@ -1002,6 +986,21 @@ function servicePrice(type, subid, choice){
                 }
                 else{
                     price = priceOld * (0.97 + 0.06 * ((saleOld > saleOlder) === (priceOld > priceOlder)) );
+                }
+            } else if(choice[0] === 2){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var turnOld = mapped[mapped[url].history[i]].quantity[0] * priceOld;
+                var turnOlder = mapped[mapped[url].history[i]].quantity[1] * priceOlder;
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
                 }
             }
 
