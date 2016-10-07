@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.39
+// @version        12.0.40
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.39";
+var version = "12.0.40";
 
 /*
 
@@ -3171,7 +3171,7 @@ function preferencePages(html, url){
 			policyArray.push("pb");
 		}
         //Has Solar Panels
-        if($html.find("form[name='servicePriceForm']")){
+        if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/consume']").length){
             policyArray.push("sc");
         }
 		
