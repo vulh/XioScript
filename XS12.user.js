@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.37
+// @version        12.0.38
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.37";
+var version = "12.0.38";
 
 /*
 
@@ -184,22 +184,50 @@ function map(html, url, page){
 			img : $html.find(".noborder td > img").map( function(i, e){ return $(e).attr("src"); }).get()
 		}
 	}
-	else if(page === "tradehall"){
-		mapped[url] = {
-			stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			deliver : $html.find(".nowrap:nth-child(5)").map( function(i, e){ return numberfy($(e).text().split("[")[1]); }).get(),
-			report : $html.find(".grid a:has(img):not(:has(img[alt]))").map( function(i, e){ return $(e).attr("href"); }).get(),
-			img : $html.find(".grid a img:not([alt])").map( function(i, e){ return $(e).attr("src"); }).get(),
-			quality : $html.find("td:nth-child(7)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			purch : $html.find("td:nth-child(9)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			price : $html.find(":text").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			name : $html.find(":text").map( function(i, e){ return $(e).attr("name"); }).get(),
-			share : $html.find(".nowrap:nth-child(11)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			cityprice : $html.find("td:nth-child(12)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			cityquality : $html.find("td:nth-child(13)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			history : $html.find("a.popup").map( function(i, e){ return $(e).attr("href"); }).get()
-		}
-	}
+    else if(page === "tradehall"){
+        mapped[url] = {
+            stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            deliver : $html.find(".nowrap:nth-child(5)").map( function(i, e){ return numberfy($(e).text().split("[")[1]); }).get(),
+            report : $html.find(".grid a:has(img):not(:has(img[alt]))").map( function(i, e){ return $(e).attr("href"); }).get(),
+            img : $html.find(".grid a img:not([alt])").map( function(i, e){ return $(e).attr("src"); }).get(),
+            quality : $html.find("td:nth-child(7)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            purch : $html.find("td:nth-child(9)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            price : $html.find(":text").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            name : $html.find(":text").map( function(i, e){ return $(e).attr("name"); }).get(),
+            share : $html.find(".nowrap:nth-child(11)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            cityprice : $html.find("td:nth-child(12)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            cityquality : $html.find("td:nth-child(13)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            history : $html.find("a.popup").map( function(i, e){ return $(e).attr("href"); }).get()
+        }
+    }
+    else if(page === "service"){
+        mapped[url] = {
+            price : $html.find("a.popup[href$='service_history']").map( function(i, e){ return numberfy($(e).text().split('(')[0].trim()); }).get(),
+            history : $html.find("a.popup[href$='service_history']").map( function(i, e){ return $(e).attr("href"); }).get(),
+
+			//not used
+            stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            deliver : $html.find(".nowrap:nth-child(5)").map( function(i, e){ return numberfy($(e).text().split("[")[1]); }).get(),
+            report : $html.find(".grid a:has(img):not(:has(img[alt]))").map( function(i, e){ return $(e).attr("href"); }).get(),
+            img : $html.find(".grid a img:not([alt])").map( function(i, e){ return $(e).attr("src"); }).get(),
+            quality : $html.find("td:nth-child(7)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            name : $html.find(":text").map( function(i, e){ return $(e).attr("name"); }).get(),
+            share : $html.find(".nowrap:nth-child(11)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            cityprice : $html.find("td:nth-child(12)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            cityquality : $html.find("td:nth-child(13)").map( function(i, e){ return numberfy($(e).text()); }).get()
+        }
+    }
+    else if(page === "servicepricehistory"){
+        mapped[url] = {
+            price : $html.find(".list td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            quantity : $html.find(".list td:nth-child(3)").map( function(i, e){ return numberfy($(e).text()); }).get()
+        }
+    }
+    else if(page === "servicepricepurch"){
+        mapped[url] = {
+            purch : $html.find('#mainContent > form > table.list > tbody > tr:last > td.nowrap').map( function(i, e){ return numberfy($(e).text()); }).get()
+        }
+    }
 	else if(page === "retailreport"){
 		mapped[url] = {
 			marketsize : numberfy($html.find("b:eq(1)").text()),
@@ -910,6 +938,97 @@ function salePrice(type, subid, choice){
 			xTypeDone(type);
 		}
 	}
+}
+
+function servicePrice(type, subid, choice){
+
+    var url = "/"+realm+"/main/unit/view/"+subid;
+    var url2 = "/"+realm+"/main/unit/view/"+subid+"/consume";
+
+    xGet(url, "service", false, function(){
+        phase();
+    });
+
+    function phase(){
+
+		var getcount = mapped[url].history.length * 2;
+
+		for(var i = 0; i < mapped[url].history.length; i++){
+			xGet(mapped[url].history[i], "servicepricehistory", false, function(){
+				!--getcount && post();
+			});
+			xGet(url2, "servicepricepurch", false, function(){
+				!--getcount && post();
+			});
+		}
+    }
+
+    function post(){
+
+        var change = false;
+        var data = "setprice=1";
+
+        for(var i = 0; i < mapped[url].price.length; i++){
+
+            var price = 0;
+
+            if(choice[0] === 1){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var turnOld = mapped[mapped[url].history[i]].quantity[0] * priceOld;
+                var turnOlder = mapped[mapped[url].history[i]].quantity[1] * priceOlder;
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
+                }
+            }
+            else if(choice[0] === 2){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var saleOld = mapped[mapped[url].history[i]].quantity[0];
+                var saleOlder = mapped[mapped[url].history[i]].quantity[1];
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((saleOld > saleOlder) === (priceOld > priceOlder)) );
+                }
+            }
+
+			price = price.toPrecision(4) || 0;
+
+			var multiplier = [0, 1, 1.1, 1.4, 2];
+			var prime = Math.round(mapped[url2].purch[0] * multiplier[choice[1]]);
+			price = Math.max(price, prime);
+
+            if(mapped[url].price[i] !== price && price > 0){
+                change = true;
+                data += "&" + encodeURI("servicePrice=" + price);
+            }
+
+        }
+
+        if(change){
+            xPost(url, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+
 }
 
 function retailPrice(type, subid, choice){
@@ -2698,7 +2817,7 @@ function wareSize(type, subid, choice){
 }
 
 var policyJSON = {
-	pp: {
+    pp: {
 		func: salePrice, 
 		save: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock", "Output"], ["Keep", "Reject"]], 
 		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock", "Output"], ["Keep", "Reject"]],
@@ -2730,7 +2849,15 @@ var policyJSON = {
 		group: "Policy",
 		wait: []
 	},
-	pt: {
+    sc: {
+        func: servicePrice,
+        save: [["-", "Sales", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        order: [["-", "Sales", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        name: "priceService",
+        group: "Price",
+        wait: []
+    },
+    pt: {
 		func: retailPrice, 
 		save: [["-", "Zero", "Market", "Turnover", "Stock", "Local", "City", "Sales"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]], 
 		order: [["-", "Zero", "Market", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],  
@@ -2841,15 +2968,15 @@ var policyJSON = {
 		name: "solars",
 		group: "Solars",
 		wait: []
-	},	
-	wz: {
-		func: wareSize,
-		save: [["-", "Packed", "Full"]],
-		order: [["-", "Packed", "Full"]],
-		name: "size",
-		group: "Size",
-		wait: []
-	}
+	},
+    wz: {
+        func: wareSize,
+        save: [["-", "Packed", "Full"]],
+        order: [["-", "Packed", "Full"]],
+        name: "size",
+        group: "Size",
+        wait: []
+    }
 };
 
 if(typeof XJSON === "undefined"){
@@ -3044,6 +3171,10 @@ function preferencePages(html, url){
 		if(/workshop/.test($html.find("#unitImage img").attr("src"))){
 			policyArray.push("pb");
 		}
+        //Has Solar Panels
+        if($html.find("form[name='servicePriceForm']")){
+            policyArray.push("sc");
+        }
 		
 		return policyArray;
 		
