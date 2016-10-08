@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.40
+// @version        12.0.41
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.40";
+var version = "12.0.41";
 
 /*
 
@@ -168,7 +168,8 @@ function map(html, url, page){
 			consump : zipAndMin(
 						$html.find(".list td:nth-last-child(1) div:nth-child(2)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
 					   ,$html.find(".list td:nth-last-child(1) div:nth-child(1)").map( function(i, e){ return numberfy($(e).text().split(":")[1]); }).get()
-					)
+					),
+            purch : $html.find('#mainContent > form > table.list > tbody > tr:last > td.nowrap').map( function(i, e){ return numberfy($(e).text()); }).get()
 		}
 	}
 	else if(page === "storesupply"){
@@ -221,11 +222,6 @@ function map(html, url, page){
         mapped[url] = {
             price : $html.find(".list td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
             quantity : $html.find(".list td:nth-child(3)").map( function(i, e){ return numberfy($(e).text()); }).get()
-        }
-    }
-    else if(page === "servicepricepurch"){
-        mapped[url] = {
-            purch : $html.find('#mainContent > form > table.list > tbody > tr:last > td.nowrap').map( function(i, e){ return numberfy($(e).text()); }).get()
         }
     }
 	else if(page === "retailreport"){
@@ -957,7 +953,7 @@ function servicePrice(type, subid, choice){
 			xGet(mapped[url].history[i], "servicepricehistory", false, function(){
 				!--getcount && post();
 			});
-			xGet(url2, "servicepricepurch", false, function(){
+			xGet(url2, "consume", false, function(){
 				!--getcount && post();
 			});
 		}
@@ -3542,7 +3538,8 @@ function XioOverview(){
 		
 	var policyString = [];
 	var groupString = [];
-	var thstring = "<th class=XOhtml style='padding-right:5px'><input type=button id=XioGeneratorPRO class='XioGo' value='Generate ALL' style='width:100%'></th>";
+    var thstring = "<th class=XOhtml style='padding-right:5px'><input type=button id=XioGeneratorPRO class='XioGo' value='Gen ALL' style='width:50%'>";
+ 	thstring += "<input type=button id=XioFirePRO class='XioGo' value='FIRE ALL' style='width:50%'></th>";
 	var tdstring = "";
 	for(var key in policyJSON){			
 		if(groupString.indexOf(policyJSON[key].group) === -1){
@@ -3725,11 +3722,14 @@ function XioOverview(){
 				}
 			}
 		}
-	});	
+	});
 
-	$(document).on('click.XO', "#XioGeneratorPRO", function(){
-		XioGenerator(subids);
-	});	
+    $(document).on('click.XO', "#XioGeneratorPRO", function(){
+        XioGenerator(subids);
+    });
+    $(document).on('click.XO', "#XioFirePRO",function(){
+        XioMaintenance(subids);
+    });
 	
 	$(document).on('click.XO', ".XioGenerator", function(){
 		var subid = numberfy($(this).attr("data-id"));
