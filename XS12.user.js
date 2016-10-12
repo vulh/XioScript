@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.41
+// @version        12.0.42
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.41";
+var version = "12.0.42";
 
 /*
 
@@ -1222,7 +1222,7 @@ function prodSupply(type, subid, choice){
 	
 	function phase(){
 
-		if(choice[0] >= 2 && !mapped[url].isProd){
+		if(choice[0] >= 2 && !mapped[url].isProd && choice[0] !== 4){
 			xGet(url2, "consume", false, function(){
 				post();
 			});
@@ -1234,60 +1234,75 @@ function prodSupply(type, subid, choice){
 	
 	function post(){
 
-		var change = [];
+        if(choice[0] === 4){
+        	var data = 'destroy=1';
 
-		if(mapped[url].parcel.length !== mapped[url].required.length){
-			choice[0] = 1;
-			postMessage("Subdivision <a href="+url+">"+subid+"</a> is missing a supplier, or has too many suppliers!");
-		}
+            for (var i = 0; i < mapped[url].offer.length; i++) {
+                data += "&" + encodeURI("multipleDestroy[]=" + mapped[url].offer[i]);
+            }
+            if(mapped[url].offer.length > 0){
+                xPost(url, data, function(){
+                    xTypeDone(type);
+                });
+            }
+            else {
+                xTypeDone(type);
+            }
+        } else {
+            var change = [];
 
-		for(var i = 0; i < mapped[url].parcel.length; i++){
-			if(mapped[url].available[i] < mapped[url].required[i]){
-				choice[0] = 1;
-				postMessage("Subdivision <a href="+url+">"+subid+"</a> has insufficient reserves at the supplier!");
-				break;
-			}
-		}
-		
-		for(var i = 0; i < mapped[url].parcel.length; i++){
-			var newsupply = 0;
-			if(choice[0] === 1){
-				newsupply = 0;
-			}		
-			else if(choice[0] === 2 && mapped[url].isProd){
-				newsupply =  mapped[url].required[i]
-			}
-			else if(choice[0] === 2 && !mapped[url].isProd){
-				newsupply = mapped[url2].consump[i];
-			}
-			else if(choice[0] === 3 && mapped[url].isProd){
-				newsupply =  Math.min(2 * mapped[url].required[i], Math.max(3 * mapped[url].required[i] - mapped[url].stock[i], 0));	
-			}
-			else if(choice[0] === 3 && !mapped[url].isProd){
-				newsupply =  Math.min(2 * mapped[url2].consump[i], Math.max(3 * mapped[url2].consump[i] - mapped[url].stock[i], 0));				
-			}
-			
-			if(mapped[url].parcel[i] !== newsupply || mapped[url].reprice[i]){
-				change.push({
-					amount: newsupply,
-					offer: mapped[url].offer[i],
-					unit: subid
-				});	
-			}								
-		}
-		
-		var postcount = change.length;
-		if(postcount){
-			for(var i = 0; i < change.length; i++){
-				xContract(urlContract, change[i], function(){
-					!--postcount && xTypeDone(type);
-				});
-			}
-		}
-		else{
-			xTypeDone(type);
-		}
-		
+            if (mapped[url].parcel.length !== mapped[url].required.length) {
+                choice[0] = 1;
+                postMessage("Subdivision <a href=" + url + ">" + subid + "</a> is missing a supplier, or has too many suppliers!");
+            }
+
+            for (var i = 0; i < mapped[url].parcel.length; i++) {
+                if (mapped[url].available[i] < mapped[url].required[i]) {
+                    choice[0] = 1;
+                    postMessage("Subdivision <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                    break;
+                }
+            }
+
+            for (var i = 0; i < mapped[url].parcel.length; i++) {
+                var newsupply = 0;
+                if (choice[0] === 1) {
+                    newsupply = 0;
+                }
+                else if (choice[0] === 2 && mapped[url].isProd) {
+                    newsupply = mapped[url].required[i]
+                }
+                else if (choice[0] === 2 && !mapped[url].isProd) {
+                    newsupply = mapped[url2].consump[i];
+                }
+                else if (choice[0] === 3 && mapped[url].isProd) {
+                    newsupply = Math.min(2 * mapped[url].required[i], Math.max(3 * mapped[url].required[i] - mapped[url].stock[i], 0));
+                }
+                else if (choice[0] === 3 && !mapped[url].isProd) {
+                    newsupply = Math.min(2 * mapped[url2].consump[i], Math.max(3 * mapped[url2].consump[i] - mapped[url].stock[i], 0));
+                }
+
+                if (mapped[url].parcel[i] !== newsupply || mapped[url].reprice[i]) {
+                    change.push({
+                        amount: newsupply,
+                        offer: mapped[url].offer[i],
+                        unit: subid
+                    });
+                }
+            }
+
+            var postcount = change.length;
+            if (postcount) {
+                for (var i = 0; i < change.length; i++) {
+                    xContract(urlContract, change[i], function () {
+                        !--postcount && xTypeDone(type);
+                    });
+                }
+            }
+            else {
+                xTypeDone(type);
+            }
+        }
 	}
 	
 }
@@ -2862,8 +2877,8 @@ var policyJSON = {
 	},
 	sp: {
 		func: prodSupply, 
-		save: [["-", "Zero", "Required", "Stock"]], 
-		order: [["-", "Zero", "Required", "Stock"]],
+		save: [["-", "Zero", "Required", "Stock", "Remove"]],
+		order: [["-", "Zero", "Required", "Stock", "Remove"]],
 		name: "supplyProd",
 		group: "Supply",
 		wait: ["priceProd", "policy", "tech", "equip"]
