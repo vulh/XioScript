@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.44
+// @version        12.0.45
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.44";
+var version = "12.0.45";
 
 /*
 
@@ -3273,7 +3273,7 @@ function preferencePages(html, url){
         if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/consume']").length){
             //service with stock
             policyArray.push("sc");
-        } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/sale']").length == 0){
+        } else if($html.find("form[name='servicePriceForm']") && !$html.find("a[href$='/sale']").length && !$html.find("a[href$='/units']").length){
             //service without stock
             policyArray.push("sl");
         }
