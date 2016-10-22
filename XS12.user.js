@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.42
+// @version        12.0.43
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.42";
+var version = "12.0.43";
 
 /*
 
@@ -936,6 +936,87 @@ function salePrice(type, subid, choice){
 	}
 }
 
+function serviceWithoutStockPrice(type, subid, choice){
+
+    var url = "/"+realm+"/main/unit/view/"+subid;
+
+    xGet(url, "service", false, function(){
+        phase();
+    });
+
+    function phase(){
+
+        var getcount = mapped[url].history.length;
+
+        for(var i = 0; i < mapped[url].history.length; i++){
+            xGet(mapped[url].history[i], "servicepricehistory", false, function(){
+                !--getcount && post();
+            });
+        }
+    }
+
+    function post(){
+
+        var change = false;
+        var data = "setprice=1";
+
+        for(var i = 0; i < mapped[url].price.length; i++){
+
+            var price = 0;
+
+            if(choice[0] === 1){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var saleOld = mapped[mapped[url].history[i]].quantity[0];
+                var saleOlder = mapped[mapped[url].history[i]].quantity[1];
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((saleOld > saleOlder) === (priceOld > priceOlder)) );
+                }
+            } else if(choice[0] === 2){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var turnOld = mapped[mapped[url].history[i]].quantity[0] * priceOld;
+                var turnOlder = mapped[mapped[url].history[i]].quantity[1] * priceOlder;
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
+                }
+            }
+
+            price = price.toPrecision(4) || 0;
+
+            if(mapped[url].price[i] !== price && price > 0){
+                change = true;
+                data += "&" + encodeURI("servicePrice=" + price);
+            }
+
+        }
+
+        if(change){
+            xPost(url, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+
+}
 function servicePrice(type, subid, choice){
 
     var url = "/"+realm+"/main/unit/view/"+subid;
@@ -2867,6 +2948,14 @@ var policyJSON = {
         group: "Price",
         wait: []
     },
+    sl: {
+        func: serviceWithoutStockPrice,
+        save: [["-", "Sales", "Turnover"]],
+        order: [["-", "Sales", "Turnover"]],
+        name: "priceService",
+        group: "Price",
+        wait: []
+    },
     pt: {
 		func: retailPrice, 
 		save: [["-", "Zero", "Market", "Turnover", "Stock", "Local", "City", "Sales"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]], 
@@ -3181,9 +3270,12 @@ function preferencePages(html, url){
 		if(/workshop/.test($html.find("#unitImage img").attr("src"))){
 			policyArray.push("pb");
 		}
-        //Has Solar Panels
         if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/consume']").length){
+            //service with stock
             policyArray.push("sc");
+        } else if($html.find("form[name='servicePriceForm']")){
+            //service without stock
+            policyArray.push("sl");
         }
 		
 		return policyArray;
