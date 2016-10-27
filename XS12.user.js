@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.47
+// @version        12.0.48
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.47";
+var version = "12.0.48";
 
 /*
 
@@ -621,6 +621,7 @@ function xTypeDone(type){
 	if(!xcount[type]){
 		if(!groupcount){
 			$("[id='x"+group+"done']").text("Done!");
+            $("[id='x"+group+"current']").text("");
 		}		
 		typedone.push(type);
 		for(var i = 0; i < xwait.length; i++){
@@ -3446,13 +3447,15 @@ function XioMaintenance(subids, allowedPolicies){
 				
 				
 				if(policy.wait.length === 0){
+                    $("[id='x"+policy.group+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subids[i] +'">'+ subids[i] +'</a>');
 					policy.func(policy.name, subids[i], choice);					
 				}
 				else{
 					xwait.push(
 						[						
 							policy.wait.slice(), 
-							function(i, j, policy, choice){	
+							function(i, j, policy, choice){
+                                $("[id='x"+policy.group+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subids[i] +'">'+ subids[i] +'</a>');
 								policy.func(policy.name, subids[i], choice);								
 							}.bind(this, i, j, policy, choice)
 						]
@@ -3482,6 +3485,7 @@ function XioMaintenance(subids, allowedPolicies){
 										+"<td>of</td>"
 										+"<td>"+xgroup[type]+"</td>"
 										+"<td id='x"+type+"done' style='color: lightgoldenrodyellow'></td>"
+										+"<td id='x"+type+"current' style='color: lightgoldenrodyellow'></td>"
 									+"</tr>"
 				);
 			}	
