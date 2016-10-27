@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.48
+// @version        12.0.49
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.48";
+var version = "12.0.49";
 
 /*
 
@@ -738,6 +738,8 @@ function salePrice(type, subid, choice){
 	}
 	
 	function phase(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
 		if(choice[0] === 4){
 			getcount++;
 			xGet(urlCTIE, "CTIE", false, function(){
@@ -789,6 +791,7 @@ function salePrice(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;
 			
 		for(var i = 0; i < mapped[url].price.length; i++){
@@ -946,6 +949,7 @@ function serviceWithoutStockPrice(type, subid, choice){
     });
 
     function phase(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
         var getcount = mapped[url].history.length;
 
@@ -957,6 +961,7 @@ function serviceWithoutStockPrice(type, subid, choice){
     }
 
     function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
         var change = false;
         var data = "setprice=1";
@@ -1028,6 +1033,7 @@ function servicePrice(type, subid, choice){
     });
 
     function phase(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
 		var getcount = mapped[url].history.length * 2;
 
@@ -1042,6 +1048,7 @@ function servicePrice(type, subid, choice){
     }
 
     function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
         var change = false;
         var data = "setprice=1";
@@ -1117,6 +1124,7 @@ function retailPrice(type, subid, choice){
 	});
 	
 	function phase(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7){
 			
@@ -1148,6 +1156,7 @@ function retailPrice(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 				
 		var change = false;
 		var data = "action=setprice";
@@ -1246,6 +1255,7 @@ function salePolicy(type, subid, choice){
 	});
 	
 	function post(){
+        $("[id='x"+"Policy"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;
 				
 		for(var i = 0; i < mapped[url].price.length; i++){
@@ -1303,6 +1313,7 @@ function prodSupply(type, subid, choice){
 	});	
 	
 	function phase(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
 		if(choice[0] >= 2 && !mapped[url].isProd && choice[0] !== 4){
 			xGet(url2, "consume", false, function(){
@@ -1315,6 +1326,7 @@ function prodSupply(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
         if(choice[0] === 4){
         	var data = 'destroy=1';
@@ -1409,6 +1421,7 @@ function storeSupply(type, subid, choice){
 	var reports = [];
 		
 	function phase(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		if(choice[1] >= 4 || choice[2] >= 1){
 			getcount += mapped[url].img.length;
 			for(var i = 0; i < mapped[url].img.length; i++){
@@ -1425,6 +1438,7 @@ function storeSupply(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var change = [];
 		
@@ -1537,6 +1551,7 @@ function salary(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Salary"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;	
 		
 		if(mapped[url].salaryNow === 0){
@@ -1626,6 +1641,7 @@ function holiday(type, subid, choice){
 	}
 	
 	function phase(){
+        $("[id='x"+"Holiday"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		getcount++;
 		xGet(url, "employees", false, function(){
 			!--getcount && post();
@@ -1646,6 +1662,7 @@ function holiday(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Holiday"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var holiday = true;
 		
@@ -1713,6 +1730,7 @@ function training(type, subid, choice){
 	var expectedSkill = 0;
 	
 	function phase(){
+        $("[id='x"+"Training"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		if(choice[0] === 3 && mapped[url].form.length){
 			xContract(urlValue, "employees="+mapped[url].employees+"&weeks=4", function(data){
@@ -1730,6 +1748,7 @@ function training(type, subid, choice){
 	}
 	
 	function post(){
+        $("[id='x"+"Training"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var change = false;	
 	
@@ -1794,6 +1813,7 @@ function equipment(type, subid, choice){
 	});	
 	
 	function phase(){
+        $("[id='x"+"Equipment"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		getcount += 2;
 		xGet(urlEquipment, "machines", false, function(){
 			!--getcount && phase2();
@@ -1804,6 +1824,7 @@ function equipment(type, subid, choice){
 	}
 	
 	function phase2(){
+        $("[id='x"+"Equipment"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 			
 		for(var i = 0; i < mapped[urlEquipment].subid.length; i++){
 			if(mapped[urlEquipment].subid[i] === subid){
@@ -1878,6 +1899,7 @@ function equipment(type, subid, choice){
 	}
 			
 	function post(){
+        $("[id='x"+"Equipment"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 			
 		var equipWear = 0;
 		// console.log('choice[1] = ' + choice[1]);
@@ -2272,6 +2294,7 @@ function technology(type, subid, choice){
 	});
 	
 	function post(){
+        $("[id='x"+"Technology"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;
 			
 		if(choice[0] === 1){
@@ -2314,7 +2337,8 @@ function prodBooster(type, subid, choice){
 		phase();
 	});
 	
-	function phase(){				
+	function phase(){
+        $("[id='x"+"Solars"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var getcount = 0;
 		
@@ -2342,6 +2366,7 @@ function prodBooster(type, subid, choice){
 	
 	
 	function post(){
+        $("[id='x"+"Solars"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		for(var artid in mapped[urlAjax]){
 			if(mapped[urlAjax][artid].symbol === "20221659.gif" && numberfy(mapped[urlAjax][artid].size) === mapped[url].size){
@@ -2376,6 +2401,7 @@ function research(type, subid, choice){
 	var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
 
 	xGet(url, "research", false, function(){
+        $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		if(choice[0] === 1 && mapped[url].isFree){			
 			xGet(urlManager, "manager", false, function(){
@@ -2383,10 +2409,12 @@ function research(type, subid, choice){
 				var manager = mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex];
 				if(mapped[url].level+1 < calcTechLevel(manager)){
 					xPost(urlProject, "industry="+mapped[url].industry+"&unit_type="+mapped[url].unittype, function(data){
+                        $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 						var isContinue = !!$(data).find(":submit").length;
 						if(isContinue){
 							var data = "industry="+mapped[url].industry+"&unit_type="+mapped[url].unittype+"&level="+(mapped[url].level+1)+"&create=Invent";
 							xPost("/"+realm+"/window/unit/view/"+subid+"/project_create", data, function(){
+                                $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 								xTypeDone(type);
 							});
 						}
@@ -2440,6 +2468,7 @@ function research(type, subid, choice){
 			if(mapped[url].curIndex !== favindex){
 				var data = "selectedHypotesis="+favid+"&selectIt=Select+a+hypothesis";
 				xPost(url, data, function(){
+                    $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 					xTypeDone(type);
 				});	
 			}
@@ -2450,12 +2479,14 @@ function research(type, subid, choice){
 		}	
 		else if(choice[0] === 1 && (mapped[url].isAbsent || mapped[url].isFactory)){			
 			xGet(urlUnit, "experimentalunit", false, function(){
+                $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 				
 				var effi = [];
 				var contractcount = mapped[urlUnit].id.length;
 				for(var i = 0; i < mapped[urlUnit].id.length; i++){
 					(function(i){
 						xContract(urlForecast, {"unit_id" : mapped[urlUnit].id[i]}, function(data){
+                            $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 							effi.push({
 								"id": mapped[urlUnit].id[i], 
 								"efficiency": numberfy(data.productivity), 
@@ -2472,6 +2503,7 @@ function research(type, subid, choice){
 				}
 				
 				function post(){
+                    $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 											
 					var efficient = 0;
 					var index = -1;
@@ -2489,6 +2521,7 @@ function research(type, subid, choice){
 					else{
 						var data = "unit="+effi[index].id+"&next=Select";				
 						xPost(urlUnit, data, function(){
+                            $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 							xTypeDone(type);
 						});							
 					}					
@@ -2534,6 +2567,7 @@ function wareSupply(type, subid, choice, good){
 	}
 	
 	function phase(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var contract = mapped[url].contract.concat(mapped[url].contractAdd);
 		var id = mapped[url].id.concat(mapped[url].idAdd);
@@ -2575,7 +2609,8 @@ function wareSupply(type, subid, choice, good){
 	var deletechange = false;
 	var deletestring = "contractDestroy=1";	
 	
-	function post(){		
+	function post(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		var supplier = [];
 		var j = 0;		
@@ -2799,7 +2834,8 @@ function advertisement(type, subid, choice){
 		post();
 	}
 	
-	function post(){	
+	function post(){
+        $("[id='x"+"Ads"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
 		var data = "";
 		var budget = 0;
@@ -2865,6 +2901,7 @@ function wareSize(type, subid, choice){
 	}	
 	
 	function phase(){
+        $("[id='x"+"Size"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 				
 		if(mapped[url].full < min || mapped[url].full > max){
 			
@@ -2880,6 +2917,7 @@ function wareSize(type, subid, choice){
 	}	
 	
 	function post(){
+        $("[id='x"+"Size"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
 		if(mapped[url].size < 10){
 			mapped[url].size = mapped[url].size * 1000;
@@ -3447,7 +3485,6 @@ function XioMaintenance(subids, allowedPolicies){
 				
 				
 				if(policy.wait.length === 0){
-                    $("[id='x"+policy.group+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subids[i] +'">'+ subids[i] +'</a>');
 					policy.func(policy.name, subids[i], choice);					
 				}
 				else{
@@ -3455,7 +3492,6 @@ function XioMaintenance(subids, allowedPolicies){
 						[						
 							policy.wait.slice(), 
 							function(i, j, policy, choice){
-                                $("[id='x"+policy.group+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subids[i] +'">'+ subids[i] +'</a>');
 								policy.func(policy.name, subids[i], choice);								
 							}.bind(this, i, j, policy, choice)
 						]
