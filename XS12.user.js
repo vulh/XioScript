@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.49
+// @version        12.0.50
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.49";
+var version = "12.0.50";
 
 /*
 
@@ -1086,6 +1086,23 @@ function servicePrice(type, subid, choice){
                 }
                 else{
                     price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
+                }
+            } else if(choice[0] === 3){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var priceOlder = mapped[mapped[url].history[i]].price[1];
+                var saleOld = mapped[mapped[url].history[i]].quantity[0];
+                var saleOlder = mapped[mapped[url].history[i]].quantity[1];
+                var profitOld = (priceOld - mapped[url2].purch[0]) * saleOld;
+                var profitOlder = (priceOlder - mapped[url2].purch[0]) * saleOlder;
+
+                if(!priceOld){
+                    price = 0;
+                }
+                else if(!priceOlder){
+                    price = priceOld * 1.03;
+                }
+                else{
+                    price = priceOld * (0.97 + 0.06 * ((profitOld > profitOlder) === (priceOld > priceOlder)) );
                 }
             }
 
@@ -2981,8 +2998,8 @@ var policyJSON = {
 	},
     sc: {
         func: servicePrice,
-        save: [["-", "Sales", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
-        order: [["-", "Sales", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        save: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        order: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
         name: "priceService",
         group: "Price",
         wait: []
