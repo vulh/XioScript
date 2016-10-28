@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.50
+// @version        12.0.51
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.50";
+var version = "12.0.51";
 
 /*
 
@@ -111,6 +111,7 @@ function map(html, url, page){
 			form : $html.find("[name=storageForm]"),
 			policy : $html.find("select:even").map( function(i, e){ return $(e).find("[selected]").index(); }).get(),
 			price : $html.find("input.money:even").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            incineratorMaxPrice : $html.find('span[style="COLOR: green;"]').map( function(i, e){ return numberfy($(e).text()); }).get(),
 			outqual : $html.find("td:has('table'):nth-last-child(6)  tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			outprime : $html.find("td:has('table'):nth-last-child(6)  tr:nth-child(3) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			stockqual : $html.find("td:has('table'):nth-last-child(5)  tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -205,6 +206,7 @@ function map(html, url, page){
         mapped[url] = {
             price : $html.find("a.popup[href$='service_history']").map( function(i, e){ return numberfy($(e).text().split('(')[0].trim()); }).get(),
             history : $html.find("a.popup[href$='service_history']").map( function(i, e){ return $(e).attr("href"); }).get(),
+            incineratorPrice : $html.find("a.popup[href$='power_history']").map( function(i, e){ return numberfy($(e).text()); }).get(),
 
 			//not used
             stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -940,6 +942,51 @@ function salePrice(type, subid, choice){
 	}
 }
 
+function incineratorPrice(type, subid, choice){
+
+    var url = "/"+realm+"/main/unit/view/"+subid;
+    var url2 = "/"+realm+"/main/unit/view/"+subid+"/sale";
+
+    xGet(url, "service", false, function(){
+        xGet(url2, "sale", false, function(){
+            post();
+        });
+    });
+
+    function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        var change = false;
+        var data = "setprice=1";
+
+        for(var i = 0; i < mapped[url].incineratorPrice.length; i++){
+
+            var price = 0;
+            if(choice[0] === 1){
+                price = mapped[url2].incineratorMaxPrice[i];
+            }
+
+            price = price.toPrecision(4) || 0;
+
+            if(mapped[url].incineratorPrice[i] !== price && price > 0){
+                change = true;
+                data += "&" + encodeURI("servicePrice=" + price);
+            }
+
+        }
+
+        if(change){
+            xPost(url, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+
+}
 function serviceWithoutStockPrice(type, subid, choice){
 
     var url = "/"+realm+"/main/unit/view/"+subid;
@@ -3012,6 +3059,14 @@ var policyJSON = {
         group: "Price",
         wait: []
     },
+    ee: {
+        func: incineratorPrice,
+        save: [["-", "Max"]],
+        order: [["-", "Max"]],
+        name: "priceService",
+        group: "Price",
+        wait: []
+    },
     pt: {
 		func: retailPrice, 
 		save: [["-", "Zero", "Market", "Turnover", "Stock", "Local", "City", "Sales"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]], 
@@ -3332,6 +3387,9 @@ function preferencePages(html, url){
         } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/virtasement']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/sale']").length && !$html.find("a[href$='/units']").length){
             //service without stock
             policyArray.push("sl");
+        } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/sale']").length && $html.find("a[href$='/technology']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+            //Incinerator
+            policyArray.push("ee");
         }
 		
 		return policyArray;
