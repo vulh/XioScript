@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.53
+// @version        12.0.54
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.53";
+var version = "12.0.54";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -179,6 +179,7 @@ function map(html, url, page){
 			price : $html.find("td:nth-child(9) table:nth-child(1) tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			reprice : $html.find("td:nth-child(9) table:nth-child(1) tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return !!$(e).find("div").length; }).get(),
 			quality : $html.find("td:nth-child(9) table:nth-child(1) tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            available : $html.find("td:nth-child(10) table:nth-child(1) tr:nth-child(3) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			img : $html.find(".noborder td > img").map( function(i, e){ return $(e).attr("src"); }).get()
 		}
 	}
