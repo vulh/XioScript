@@ -11,10 +11,6 @@
 
 var version = "12.0.53";
 
-/*
-
-*/
-
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 //Holiday laboratory
