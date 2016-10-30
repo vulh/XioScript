@@ -1510,7 +1510,20 @@ function storeSupply(type, subid, choice){
 			postMessage("Subdivision <a href="+url+">"+subid+"</a> is missing a supplier, or has too many suppliers!");
 		}
         for (var i = 0; i < mapped[url].parcel.length; i++) {
-            if (mapped[url].available[i] < mapped[url].required[i]) {
+            var newsupply = 0;
+            if(choice[0] === 2){
+                newsupply = mapped[url].sold[i];
+            }
+            else if(choice[0] === 3){
+                newsupply = mapped[url].sold[i] + Math.ceil(mapped[url].sold[i] * (mapped[url].quantity[i] === mapped[url].purchase[i]) * 0.25);
+            }
+            else if(choice[0] === 4){
+                newsupply = Math.min(2 * mapped[url].sold[i], 3 * mapped[url].sold[i] - mapped[url].quantity[i]);
+            }
+            else if(choice[0] === 5){
+                newsupply = mapped[url].sold[i] * (0.4 * (mapped[url].sold[i] > mapped[url].quantity[i] / 2) + 0.8)
+            }
+            if (newsupply > 0 && mapped[url].available[i] < newsupply) {
                 postMessage("Subdivision <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
                 break;
             }
