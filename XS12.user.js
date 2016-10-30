@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.51
+// @version        12.0.52
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.51";
+var version = "12.0.52";
 
 /*
 
@@ -1416,7 +1416,6 @@ function prodSupply(type, subid, choice){
 
             for (var i = 0; i < mapped[url].parcel.length; i++) {
                 if (mapped[url].available[i] < mapped[url].required[i]) {
-                    choice[0] = 1;
                     postMessage("Subdivision <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
                     break;
                 }
@@ -1510,6 +1509,12 @@ function storeSupply(type, subid, choice){
 			choice[0] = 1;
 			postMessage("Subdivision <a href="+url+">"+subid+"</a> is missing a supplier, or has too many suppliers!");
 		}
+        for (var i = 0; i < mapped[url].parcel.length; i++) {
+            if (mapped[url].available[i] < mapped[url].required[i]) {
+                postMessage("Subdivision <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                break;
+            }
+        }
 		
 		for(var i = 0; i < mapped[url].parcel.length; i++){
 			
