@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.55
+// @version        12.0.56
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.55";
+var version = "12.0.56";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1412,8 +1412,22 @@ function prodSupply(type, subid, choice){
             }
 
             for (var i = 0; i < mapped[url].parcel.length; i++) {
-                if (mapped[url].available[i] < mapped[url].required[i]) {
-                    postMessage("Subdivision (production) <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                var newsupply = 0;
+                if (choice[0] === 2 && mapped[url].isProd) {
+                    newsupply = mapped[url].required[i]
+                }
+                else if (choice[0] === 2 && !mapped[url].isProd) {
+                    newsupply = mapped[url2].consump[i];
+                }
+                else if (choice[0] === 3 && mapped[url].isProd) {
+                    newsupply = Math.min(2 * mapped[url].required[i], Math.max(3 * mapped[url].required[i] - mapped[url].stock[i], 0));
+                }
+                else if (choice[0] === 3 && !mapped[url].isProd) {
+                    newsupply = Math.min(2 * mapped[url2].consump[i], Math.max(3 * mapped[url2].consump[i] - mapped[url].stock[i], 0));
+                }
+                if (newsupply > 0 && mapped[url].available[i] < newsupply) {
+                	var prodText = (mapped[url].isProd) ? "(production) " : "";
+                    postMessage("Subdivision " + prodText + "<a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
                     break;
                 }
             }
