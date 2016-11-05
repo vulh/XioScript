@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.56
+// @version        12.0.57
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.56";
+var version = "12.0.57";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -287,6 +287,7 @@ function map(html, url, page){
 			img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
 			size : numberfy($html.find("#unitImage img").attr("src").split("_")[1]),
 			hasBooster : !$html.find("[src='/img/artefact/icons/color/production.gif']").length,
+            hasAgitation : !$html.find("[src='/img/artefact/icons/color/politics.gif']").length,
 			onHoliday : !!$html.find("[href$=unset]").length,
 			isStore : !!$html.find("[href$=trading_hall]").length,
 			departments : numberfy($html.find("tr:contains('Number of departments') td:eq(1)").text()),
@@ -2419,7 +2420,49 @@ function technology(type, subid, choice){
 	
 	
 }
+function politicAgitation(type, subid, choice){
 
+    var url = "/"+realm+"/main/unit/view/"+subid;
+    var urlFinance = "/"+realm+"/main/unit/view/"+subid+"/finans_report/by_item";
+    var urlAjax = "/"+realm+"/ajax/unit/artefact/list/?unit_id="+subid+"&slot_id=368592";
+
+    xGet(url, "main", false, function(){
+        phase();
+    });
+
+    function phase(){
+        $("[id='x"+"Politics"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        var getcount = 0;
+
+        if(!mapped[url].hasAgitation && choice[0] === 1){
+            getcount += 1;
+            xGet(urlAjax, "ajax", false, function(){
+                !--getcount && post();
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+
+
+    function post(){
+        $("[id='x"+"Politics"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        for(var artid in mapped[urlAjax]){
+            if(mapped[urlAjax][artid].symbol === "agitation_1.gif" && numberfy(mapped[urlAjax][artid].size) === mapped[url].size){
+                xGet("/"+realm+"/ajax/unit/artefact/attach/?unit_id="+subid+"&artefact_id="+artid+"&slot_id=368592", "none", false, function(){
+                    xTypeDone(type);
+                });
+
+                break;
+            }
+        }
+    }
+
+}
 function prodBooster(type, subid, choice){
 	
 	var url = "/"+realm+"/main/unit/view/"+subid;
@@ -3208,6 +3251,14 @@ var policyJSON = {
 		group: "Solars",
 		wait: []
 	},
+    pa: {
+        func: politicAgitation,
+        save: [["-", "Continuous agitation"]],
+        order: [["-", "Continuous agitation"]],
+        name: "politics",
+        group: "Politics",
+        wait: []
+    },
     wz: {
         func: wareSize,
         save: [["-", "Packed", "Full"]],
@@ -3400,16 +3451,20 @@ function preferencePages(html, url){
 		}		
 		
 		policyArray.push("et");
-		
-		//Has Equipment		
-		if($html.find(".fa-cogs").length || $html.find("[href*='/window/unit/equipment/']").length){
-			policyArray.push("qm");
-		}	
-		
-		//Has Solar Panels
+
+        //Has Equipment
+        if($html.find(".fa-cogs").length || $html.find("[href*='/window/unit/equipment/']").length){
+            policyArray.push("qm");
+        }
+
+        //Has Solar Panels
 		if(/workshop/.test($html.find("#unitImage img").attr("src"))){
 			policyArray.push("pb");
 		}
+		//has politic agitation
+		if(/villa/.test($html.find("#unitImage img").attr("src"))){
+            policyArray.push("pa");
+        }
         if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/consume']").length){
             //service with stock
             policyArray.push("sc");
