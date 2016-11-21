@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.57
+// @version        12.0.58
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.57";
+var version = "12.0.58";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1653,6 +1653,7 @@ function salary(type, subid, choice){
 			mapped[url].form.find("#salary").val(mapped[url].salaryCity);
 		}			
 		else if(choice[0] === 1 && mapped[url].skillNow !== mapped[url].skillReq){
+            //"Required"
 			change = true;
 			mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, mapped[url].skillReq);
 			mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity+.005) * 0.8);
@@ -1660,6 +1661,7 @@ function salary(type, subid, choice){
 			mapped[url].form.find("#salary").val(mapped[url].salaryNow);			
 		}
 		else if(choice[0] === 2){
+        	//"Target"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex]);
 						
@@ -1673,6 +1675,7 @@ function salary(type, subid, choice){
 			
 		}
 		else if(choice[0] === 3){
+			//"Maximum"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
 						
@@ -1685,6 +1688,7 @@ function salary(type, subid, choice){
 			}
 		}
 		else if(choice[0] === 4){
+			//"Overflow"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var manager = mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex];
 			var factor3 = subType[mapped[urlMain].img][1];
@@ -1699,6 +1703,49 @@ function salary(type, subid, choice){
 				mapped[url].form.find("#salary").val(mapped[url].salaryNow);
 			}
 		}
+        else if(choice[0] >= 5 && choice[0] <= 12){
+            //"20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"
+			var loadPercent = 20;
+            if(choice[0] === 6) {
+            	loadPercent = 30;
+            }
+            else if(choice[0] === 7) {
+            	loadPercent = 39;
+            }
+            else if(choice[0] === 8) {
+            	loadPercent = 50;
+            }
+            else if(choice[0] === 9) {
+            	loadPercent = 60;
+            }
+            else if(choice[0] === 10) {
+                loadPercent = 69;
+            }
+            else if(choice[0] === 11) {
+                loadPercent = 119;
+            }
+            else if(choice[0] === 12) {
+                loadPercent = 139;
+            }
+
+            var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
+            var skillReq = mapped[url].skillReq;
+            var load = mapped[url].employees / calcEmployees(skillReq, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]) * 100;
+            while (load < loadPercent) {
+                skillReq += 0.01;
+                load = mapped[url].employees / calcEmployees(skillReq, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]) * 100;
+            }
+            skillReq = Math.max(skillReq, mapped[url].skillReq);
+
+            if(mapped[url].skillNow !== skillReq){
+                change = true;
+                mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
+                mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity+.005) * 0.8);
+                mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+                mapped[url].form.find("#salary").val(mapped[url].salaryNow);
+            }
+
+        }
 
 		if(change){
 			xPost(url, mapped[url].form.serialize(), function(){
@@ -3181,16 +3228,16 @@ var policyJSON = {
 	},
 	es: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum"]], 
-		order: [["-", "Required", "Target", "Maximum"]], 
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
 		name: "salaryOldInterface",
 		group: "Salary",
 		wait: ["equip"]
 	},	
 	en: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum", "Overflow"]], 
-		order: [["-", "Required", "Target", "Maximum", "Overflow"]], 
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
 		name: "salaryNewInterface",
 		group: "Salary",
 		wait: ["equip"]
