@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.59
+// @version        12.0.60
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.59";
+var version = "12.0.60";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3338,7 +3338,7 @@ function preference(policies){
 	var savedPolicyStrings = ls["x"+realm+subid]? ls["x"+realm+subid].split(";") : [];
 	var savedPolicies = [];
 	var savedPolicyChoices = [];
-	var $topblock = $("div[class='metro_header']");
+	var $topblock = $("div.metro_header");
 	for(var i = 0; i < savedPolicyStrings.length; i++){		
 		savedPolicies[i] = savedPolicyStrings[i].substring(0, 2);
 		savedPolicyChoices[i] = savedPolicyStrings[i].substring(2).split("-");		
@@ -3639,7 +3639,7 @@ function XioMaintenance(subids, allowedPolicies){
 		+"</table>"
 		+"<div id=XMproblem class=XioProperty style='font-size: 18px; color:gold;'></div>";
 				
-	$("div[class='metro_header']").append(tablestring);
+	$("div.metro_header").append(tablestring);
 		
 	urlUnitlist = "/"+realm+"/main/company/view/"+companyid+"/unit_list";
 	var filtersetting = $(".u-s").attr("href") || "/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithProduction/class=0/size=0/type=" + $(".unittype").val();
@@ -3745,7 +3745,7 @@ function XioGenerator(subids){
 	$(".XioGo").attr("disabled", true);
 	$(".XioProperty").remove();
 	
-	$("div[class='metro_header']").append(""
+	$("div.metro_header").append(""
 		+"<table id=XMtable class=XioProperty style='font-size: 18px; color:gold; border-spacing: 10px 0; margin-top: 10px;'>"
 			+"<tr>"
 				+"<td>Total server calls: </td>"
@@ -4143,7 +4143,7 @@ function XioHoliday(){
 
 function XioExport(){
 	$(".XioProperty").remove();
-	$("div[class='metro_header']").append("<br class=XioProperty><textarea id=XEarea class=XioProperty style='width: 900px'></textarea>");
+	$("div.metro_header").append("<br class=XioProperty><textarea id=XEarea class=XioProperty style='width: 900px'></textarea>");
 	
 	var string = "";
 	for(var key in ls){
@@ -4158,7 +4158,7 @@ function XioExport(){
 
 function XioImport(){
 	$(".XioProperty").remove();
-	$("div[class='metro_header']").append("<br class=XioProperty><textarea id=XIarea class=XioProperty style='width: 900px'></textarea><br class=XioProperty><input type=button id=XioSave class=XioProperty value=Save!>");
+	$("div.metro_header").append("<br class=XioProperty><textarea id=XIarea class=XioProperty style='width: 900px'></textarea><br class=XioProperty><input type=button id=XioSave class=XioProperty value=Save!>");
 	
 	$(document).on('input propertychange', "#XIarea", function(){
 		$("#XIarea").height($("#XIarea")[0].scrollHeight);
@@ -4402,20 +4402,27 @@ function XioScript(){
 								   +$(".pager_options :eq(1)")[0].outerHTML.replace(/10/g, "20000") 
 		);
 	}
-	
+
 	//Not user company
+	//unit list
     if($(".tabu > .sel > a").attr("href").replace('/unit_list','/dashboard') !== $(".dashboard a").attr("href")){
-        return false;
+		//unit page
+		if($(".officePlace a").attr("href") + "/dashboard" !== $(".dashboard a").attr("href")) {
+            console.log('Not user company');
+            return false;
+        }
     }
-	
+
 	//Building
 	if(new RegExp("\/.*\/main\/unit\/create\/[0-9]+").test(document.URL)){
+        console.log('Building');
 		buildingShortener();
 	}
 	
 	//Unit list	
     if(new RegExp("\/.*\/main\/company\/view\/[0-9]+\/unit_list(\/xiooverview)?$").test(document.URL)){
-        $("div[class='metro_header']").append("<div style='font-size: 24px; color:gold; margin-bottom: 5px;'>XioScript "+version+"</div>"
+        console.log('Unit list');
+        $("div.metro_header").append("<div style='font-size: 24px; color:gold; margin-bottom: 5px;'>XioScript "+version+"</div>"
 							 +"<input type=button id=XM class=XioGo value=XioMaintenance>"
 							 +"<input type=button id=XO value=XioOverview>"
 							 +"<input type=button id=XE class=XioGo value=Export>"
@@ -4447,6 +4454,7 @@ function XioScript(){
 	
 	//Top Manager
     if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+$").test(document.URL) && ($(".fa-users").length === 1 || $("[href*='/window/unit/employees/engage/']").length === 1)){
+        console.log('Top Manager');
 		topManagerStats();
 	}
 	
