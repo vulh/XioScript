@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.60
+// @version        12.0.61
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.60";
+var version = "12.0.61";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1625,23 +1625,25 @@ function salary(type, subid, choice){
 	var urlMain = "/"+realm+"/main/unit/view/"+subid;
 	var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
 	var getcount = 0;
-	
-	if(choice >= 1){
-		getcount++;
-		xGet(url, "salary", true, function(){
-			!--getcount && post();
-		});
-	}
-	
-	if(choice >= 2){
-		getcount += 2;
+
+
+    if(choice[0] === 1){
+        getcount++;
+        xGet(url, "salary", true, function(){
+            !--getcount && post();
+        });
+    }
+    else if(choice[0] >= 2){
+		getcount += 3;
 		xGet(urlMain, "main", false, function(){
 			!--getcount && post();
 		});
 		xGet(urlManager, "manager", false, function(){
 			!--getcount && post();
 		});
-		
+        xGet(url, "salary", true, function(){
+            !--getcount && post();
+        });
 	}
 	
 	function post(){
@@ -1703,8 +1705,8 @@ function salary(type, subid, choice){
 				mapped[url].form.find("#salary").val(mapped[url].salaryNow);
 			}
 		}
-        else if(choice[0] >= 5 && choice[0] <= 12){
-            //"20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"
+        else if(choice[0] >= 5 && choice[0] <= 13){
+            //"20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"
 			var loadPercent = 20;
             if(choice[0] === 6) {
             	loadPercent = 30;
@@ -1727,6 +1729,9 @@ function salary(type, subid, choice){
             else if(choice[0] === 12) {
                 loadPercent = 139;
             }
+            else if(choice[0] === 13) {
+                loadPercent = 130;
+            }
 
             var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
             var skillReq = mapped[url].skillReq;
@@ -1735,6 +1740,7 @@ function salary(type, subid, choice){
                 skillReq += 0.01;
                 load = mapped[url].employees / calcEmployees(skillReq, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]) * 100;
             }
+            skillReq -= 0.01;
             skillReq = Math.max(skillReq, mapped[url].skillReq);
 
             if(mapped[url].skillNow !== skillReq){
@@ -3228,16 +3234,16 @@ var policyJSON = {
 	},
 	es: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
-		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"]],
 		name: "salaryOldInterface",
 		group: "Salary",
 		wait: ["equip"]
 	},	
 	en: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
-		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1"]],
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"]],
 		name: "salaryNewInterface",
 		group: "Salary",
 		wait: ["equip"]
