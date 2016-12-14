@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.61
+// @version        12.0.62
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.61";
+var version = "12.0.62";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2738,14 +2738,22 @@ function wareSupply(type, subid, choice, good){
 	xGet(urlMain, "waremain", true, function(){
 		!--getcount && phase();
 	});
-	
-	if(choice[1] >= 1){
+
+    if(choice[1] >= 1){
+        var minFreeForBuy = 1;
+        //"Any available volume"
+        // , "1k", "10k", "100k"
+        // , "1m", "10m", "100m"
+        // , "1b", "10b", "100b"
+        if(choice[3] > 0){
+            minFreeForBuy = 100 * Math.pow(10, choice[3]);
+        }
 		
 		getcount += 3;
 		xGet("/"+realm+"/window/common/util/setpaging/dbwarehouse/supplyList/40000", "none", false, function(){
 			!--getcount && phase();
 		});
-		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=1&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
+		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
 		xPost("/"+realm+"/window/common/util/setfiltering/dbwarehouse/supplyList", data, function(){
 			!--getcount && phase();
 		});
@@ -3218,8 +3226,8 @@ var policyJSON = {
 	},
 	sh: {
 		func: wareSupply,
-		save: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"]], 
-		order: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"]], 
+		save: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"], ["Any available volume", "1k", "10k", "100k", "1m", "10m", "100m", "1b", "10b", "100b"]],
+		order: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"], ["Any available volume", "1k", "10k", "100k", "1m", "10m", "100m", "1b", "10b", "100b"]],
 		name: "supplyWare",
 		group: "Supply",
 		wait: ["supplyProd", "supplyRetail"]
