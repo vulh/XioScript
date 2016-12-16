@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.62
+// @version        12.0.63
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.62";
+var version = "12.0.63";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1626,7 +1626,6 @@ function salary(type, subid, choice){
 	var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
 	var getcount = 0;
 
-
     if(choice[0] === 1){
         getcount++;
         xGet(url, "salary", true, function(){
@@ -1635,7 +1634,7 @@ function salary(type, subid, choice){
     }
     else if(choice[0] >= 2){
 		getcount += 3;
-		xGet(urlMain, "main", false, function(){
+		xGet(urlMain, "main", true, function(){
 			!--getcount && post();
 		});
 		xGet(urlManager, "manager", false, function(){
@@ -1645,8 +1644,9 @@ function salary(type, subid, choice){
             !--getcount && post();
         });
 	}
-	
-	function post(){
+
+
+        function post(){
         $("[id='x"+"Salary"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;	
 		
@@ -1750,7 +1750,6 @@ function salary(type, subid, choice){
                 mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
                 mapped[url].form.find("#salary").val(mapped[url].salaryNow);
             }
-
         }
 
 		if(change){
