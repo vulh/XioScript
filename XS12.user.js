@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.64
+// @version        12.0.65
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.64";
+var version = "12.0.65";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -129,6 +129,10 @@ function map(html, url, page){
 		mapped[url] = $html.find(".inner_table").length? {  //new interface
 			isProd : !$html.find(".sel").next().attr("class"),
 			parcel : $html.find(".quickchange").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_mark_up : "",
+            price_constraint_max : "",
+            price_constraint_type : "",
+            quality_constraint_min : "",
 			required : $html.find(".list td:nth-child(3).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			stock : $html.find(".list td:nth-child(4).inner_table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			basequality : $html.find(".list td:nth-child(4).inner_table tr:nth-child(2) td:nth-child(2)[align]").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -144,7 +148,11 @@ function map(html, url, page){
 			img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0]
 		} : { //old interface
 			isProd : !$html.find(".sel").next().attr("class"),
-			parcel : $html.find("input[type=type]").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            parcel : $html.find("input[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_mark_up : $html.find("select[name^='supplyContractData[price_mark_up]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_max : $html.find("input[name^='supplyContractData[price_constraint_max]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_type : $html.find("select[name^='supplyContractData[constraintPriceType]']").map( function(i, e){ return $(e).val(); }).get(),
+            quality_constraint_min : $html.find("input[name^='supplyContractData[quality_constraint_min]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
 			required : $html.find(".list td:nth-child(2) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			stock : $html.find(".list td:nth-child(3) table tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			basequality : $html.find(".list td:nth-child(3) table tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -172,6 +180,10 @@ function map(html, url, page){
 	else if(page === "storesupply"){
 		mapped[url] = {
 			parcel : $html.find("input:text[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_mark_up : $html.find("select[name^='supplyContractData[price_mark_up]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_max : $html.find("input[name^='supplyContractData[price_constraint_max]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_type : $html.find("select[name^='supplyContractData[constraintPriceType]']").map( function(i, e){ return $(e).val(); }).get(),
+            quality_constraint_min : $html.find("input[name^='supplyContractData[quality_constraint_min]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
 			purchase : $html.find("td.nowrap:nth-child(4)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			quantity : $html.find("td:nth-child(2) table:nth-child(1) tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			sold : $html.find("td:nth-child(2) table:nth-child(1) tr:nth-child(5) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -359,7 +371,11 @@ function map(html, url, page){
 			type : $html.find(".p_title").map( function(i, e){ return $(e).find("strong:eq(0)").text(); }).get(),
 			stock : $html.find(".p_title table").map( function(i, e){ return $(e).find("strong").length >= 2? numberfy($(e).find("strong:eq(0)").text()) : 0; }).get(),			
 			shipments : $html.find(".p_title table").map( function(i, e){ return $(e).find("strong").length === 1? numberfy($(e).find("strong:eq(0)").text()) : numberfy($(e).find("strong:eq(2)").text()); }).get(),
-			parcel : $html.find("input:text[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            parcel : $html.find("input:text[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_mark_up : $html.find("input[name^='supplyContractData[price_mark_up]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_max : $html.find("input[name^='supplyContractData[price_constraint_max]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price_constraint_type : $html.find("input[name^='supplyContractData[constraintPriceType]']").map( function(i, e){ return $(e).val(); }).get(),
+            quality_constraint_min : $html.find("input[name^='supplyContractData[quality_constraint_min]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
 			product : $html.find("tr:has(input:text[name])").map( function(i, e){ return $(e).prevAll(".p_title:first").find("strong:eq(0)").text(); }).get(),
 			price : $html.find("tr:has(input) td:nth-child(4)").map( function(i, e){ return numberfy($(e).text().match(/(\d|\.|\s)+$/)); }).get(),
 			reprice : $html.find("tr:has(input) td:nth-child(4)").map( function(i, e){ return !!$(e).find("span").length; }).get(),
@@ -1455,7 +1471,11 @@ function prodSupply(type, subid, choice){
                     change.push({
                         amount: newsupply,
                         offer: mapped[url].offer[i],
-                        unit: subid
+                        unit: subid,
+                        priceMarkUp 	    : mapped[url].price_mark_up[i],
+                        priceConstraint     : mapped[url].price_constraint_max[i],
+                        constraintPriceType : mapped[url].price_constraint_type[i],
+                        qualityMin          : mapped[url].quality_constraint_min[i]
                     });
                 }
             }
@@ -1601,7 +1621,11 @@ function storeSupply(type, subid, choice){
 				change.push({
 					amount: newsupply,
 					offer: mapped[url].offer[i],
-					unit: subid
+					unit: subid,
+                    priceConstraint 		: mapped[url].price_constraint_max[i],
+                    priceMarkUp 	  		: mapped[url].price_mark_up[i],
+                    qualityMin 	  		: mapped[url].quality_constraint_min[i],
+                    constraintPriceType	: mapped[url].price_constraint_type[i]
 				});	
 			}								
 		}
@@ -1648,13 +1672,13 @@ function salary(type, subid, choice){
 
         function post(){
         $("[id='x"+"Salary"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-		var change = false;	
+		var change = false;
 		
 		if(mapped[url].salaryNow === 0){
 			change = true;
 			mapped[url].form.find("#salary").val(mapped[url].salaryCity);
 		}			
-		else if(choice[0] === 1 && mapped[url].skillNow !== mapped[url].skillReq){
+		else if(choice[0] === 1 && (mapped[url].skillNow !== mapped[url].skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8))) {
             //"Required"
 			change = true;
 			mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, mapped[url].skillReq);
@@ -1669,7 +1693,7 @@ function salary(type, subid, choice){
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex]);
 						
-			if(mapped[url].skillNow !== skillReq){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
                 if(choice[1] !== 1) {
@@ -1685,7 +1709,7 @@ function salary(type, subid, choice){
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
 						
-			if(mapped[url].skillNow !== skillReq){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
                 if(choice[1] !== 1) {
@@ -1703,7 +1727,7 @@ function salary(type, subid, choice){
 			var managerNew = manager * calcOverflowTop1(mapped[urlMain].maxEmployees, factor3, manager);	
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], managerNew);
 						
-			if(mapped[url].skillNow !== skillReq){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
                 if(choice[1] !== 1) {
@@ -1751,7 +1775,7 @@ function salary(type, subid, choice){
             skillReq -= 0.01;
             skillReq = Math.max(skillReq, mapped[url].skillReq);
 
-            if(mapped[url].skillNow !== skillReq){
+            if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
                 change = true;
                 mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
                 if(choice[1] !== 1) {
@@ -2853,7 +2877,11 @@ function wareSupply(type, subid, choice, good){
 					offer : mapped[url].offer[j],
 					myself : mapped[url].myself[j],
 					index : j, 
-					sup : j-jstart
+					sup : j-jstart,
+                    priceMarkUp 	    : mapped[url].price_mark_up[j],
+                    priceConstraint     : mapped[url].price_constraint_max[j],
+                    constraintPriceType : mapped[url].price_constraint_type[j],
+                    qualityMin          : mapped[url].quality_constraint_min[j]
 				});
 				j++;					
 			}			
@@ -2876,8 +2904,12 @@ function wareSupply(type, subid, choice, good){
 						change.push({							
 							'newsup' : false,
 							'offer'  : supplier[k].offer,
-							'amount' : toset	
-						});
+							'amount' : toset,
+                            'priceMarkUp'         : supplier[k].priceMarkUp,
+                            'priceConstraint'     : supplier[k].priceConstraint,
+                            'constraintPriceType' : supplier[k].constraintPriceType,
+                            'qualityMin'          : supplier[k].qualityMin
+                        });
 					}		
 				}
 				
@@ -2934,8 +2966,12 @@ function wareSupply(type, subid, choice, good){
 							'offer'  : mix[k].offer,
 							'amount' : toset,
 							'company' : mix[k].company,
-							'good' : product
-						});	
+							'good' : product,
+                            'priceMarkUp'         : mix[k].priceMarkUp,
+                            'priceConstraint'     : mix[k].priceConstraint,
+                            'constraintPriceType' : mix[k].constraintPriceType,
+                            'qualityMin'          : mix[k].qualityMin
+						});
 						if(mix[k].row >= 0){
 							mapped[urlContract[i]].available[mix[k].index] -= toset;		
 						}
@@ -2973,7 +3009,11 @@ function wareSupply(type, subid, choice, good){
 					xContract("/"+realm+"/ajax/unit/supply/create", {
 					'offer'  		  : steak.offer,
 					'unit'  		  : subid,
-					'amount'		  : steak.amount			
+					'amount'		  : steak.amount,
+                    'priceConstraint' 		: steak.priceConstraint,
+                    'priceMarkUp' 	  		: steak.priceMarkUp,
+                    'qualityMin' 	  		: steak.qualityMin,
+                    'constraintPriceType'	: steak.constraintPriceType
 					}, function(data){	
 					
 						if(data.result === "-5" && blackmail.indexOf(steak.company) === -1){
