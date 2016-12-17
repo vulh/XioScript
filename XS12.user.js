@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.67
+// @version        12.0.68
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.67";
+var version = "12.0.68";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -946,6 +946,7 @@ function salePrice(type, subid, choice){
 		
 		
 		if(change){
+          		mapped[url].form.find("select[id] option").attr("selected", true);
 			xPost(url, mapped[url].form.serialize(), function(){
 				xTypeDone(type);
 			});
