@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.66
+// @version        12.0.67
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.66";
+var version = "12.0.67";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1669,8 +1669,8 @@ function salary(type, subid, choice){
         });
 	}
 
-
-        function post(){
+	//choice[1]: ["min 80% max 500%", "max 500%", "min 80%", "No bound"]
+	function post(){
         $("[id='x"+"Salary"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		var change = false;
 		
@@ -1678,14 +1678,16 @@ function salary(type, subid, choice){
 			change = true;
 			mapped[url].form.find("#salary").val(mapped[url].salaryCity);
 		}			
-		else if(choice[0] === 1 && (mapped[url].skillNow !== mapped[url].skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8))) {
+		else if(choice[0] === 1 && (mapped[url].skillNow !== mapped[url].skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 500) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8))) {
             //"Required"
 			change = true;
 			mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, mapped[url].skillReq);
-            if(choice[1] !== 1) {
+            if(choice[1] !== 3 && choice[1] !== 1) {
                 mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity + .005) * 0.8);
             }
-			mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+            if(choice[1] !== 3 && choice[1] !== 2) {
+                mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity - .005) * 500);
+            }
 			mapped[url].form.find("#salary").val(mapped[url].salaryNow);			
 		}
 		else if(choice[0] === 2){
@@ -1693,13 +1695,15 @@ function salary(type, subid, choice){
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex]);
 						
-			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 500) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
-                if(choice[1] !== 1) {
+                if(choice[1] !== 3 && choice[1] !== 1) {
                     mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity + .005) * 0.8);
                 }
-				mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+                if(choice[1] !== 3 && choice[1] !== 2) {
+                    mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity - .005) * 500);
+                }
 				mapped[url].form.find("#salary").val(mapped[url].salaryNow);
 			}
 			
@@ -1709,13 +1713,15 @@ function salary(type, subid, choice){
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
 						
-			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 500) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
-                if(choice[1] !== 1) {
+                if(choice[1] !== 3 && choice[1] !== 1) {
                     mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity + .005) * 0.8);
                 }
-				mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+                if(choice[1] !== 3 && choice[1] !== 2) {
+                    mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity - .005) * 500);
+                }
 				mapped[url].form.find("#salary").val(mapped[url].salaryNow);
 			}
 		}
@@ -1727,13 +1733,15 @@ function salary(type, subid, choice){
 			var managerNew = manager * calcOverflowTop1(mapped[urlMain].maxEmployees, factor3, manager);	
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], managerNew);
 						
-			if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
+			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 500) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
 				mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
-                if(choice[1] !== 1) {
+                if(choice[1] !== 3 && choice[1] !== 1) {
                     mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity + .005) * 0.8);
                 }
-				mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+                if(choice[1] !== 3 && choice[1] !== 2) {
+                    mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity - .005) * 500);
+                }
 				mapped[url].form.find("#salary").val(mapped[url].salaryNow);
 			}
 		}
@@ -1775,13 +1783,15 @@ function salary(type, subid, choice){
             skillReq -= 0.01;
             skillReq = Math.max(skillReq, mapped[url].skillReq);
 
-            if(mapped[url].skillNow !== skillReq || (choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
+            if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 500) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
                 change = true;
                 mapped[url].salaryNow = calcSalary(mapped[url].salaryNow, mapped[url].salaryCity, mapped[url].skillNow, mapped[url].skillCity, skillReq);
-                if(choice[1] !== 1) {
+                if(choice[1] !== 3 && choice[1] !== 1) {
                     mapped[url].salaryNow = Math.max(mapped[url].salaryNow, (mapped[url].salaryCity + .005) * 0.8);
                 }
-                mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity-.005) * 500);
+                if(choice[1] !== 3 && choice[1] !== 2) {
+                    mapped[url].salaryNow = Math.min(mapped[url].salaryNow, (mapped[url].salaryCity - .005) * 500);
+                }
                 mapped[url].form.find("#salary").val(mapped[url].salaryNow);
             }
         }
@@ -3291,16 +3301,16 @@ var policyJSON = {
 	},
 	es: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"],["min 80%","No low bound"]],
-		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80%","No low bound"]],
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
 		name: "salaryOldInterface",
 		group: "Salary",
 		wait: ["equip"]
 	},	
 	en: {
 		func: salary, 
-		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"],["min 80%","No low bound"]],
-		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80%","No low bound"]],
+		save: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "139%top1", "130%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
+		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
 		name: "salaryNewInterface",
 		group: "Salary",
 		wait: ["equip"]
