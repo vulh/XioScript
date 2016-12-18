@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.69
+// @version        12.0.70
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.69";
+var version = "12.0.70";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4186,8 +4186,8 @@ function XioHoliday(){
 	xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithHoliday/20000", "none", false, function(){
 		!--getcount && phase();
 	});
-	
-	xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithHoliday/class=0/type=0", "none", false, function(){
+	var nvClass = $('table.unit-top > tbody > tr > td > a.u-s').first().attr('href').match(/\/class=(\d+)\//)[1] || 0;
+	xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithHoliday/class="+ nvClass +"/type=0", "none", false, function(){
 		!--getcount && phase();
 	});
 	
