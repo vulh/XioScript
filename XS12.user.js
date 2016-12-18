@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.68
+// @version        12.0.69
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.68";
+var version = "12.0.69";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4115,6 +4115,10 @@ function XioOverview(){
 			var column = $this.parent().index();
 			
 			var $arr = $(".trXIO td:nth-child("+(column+1)+") .XioChoice");
+			//if row not selected
+          	  	if($arr.length === 0){
+			  $arr = $("tr:nth-child("+($this.parent().parent().index()+1)+") td:nth-child("+(column+1)+") .XioChoice");			 
+            		}
 			
 			for(var i = 0; i < $arr.length; i++){			
 							
