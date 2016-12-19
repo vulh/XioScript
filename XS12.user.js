@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.72
+// @version        12.0.73
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.72";
+var version = "12.0.73";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1712,7 +1712,7 @@ function salary(type, subid, choice){
 		else if(choice[0] === 3){
 			//"Maximum"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
-			var skillReq = -0.01 + calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
+			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
 						
 			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 5) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
@@ -4258,7 +4258,8 @@ function XioImport(){
 
 function calcSalary(sn, sc, kn, kc, kr){
 	// s = salary, k = skill, n = now, c = city, r = required
-	var calc = sn > sc? kn - kc * Math.log( 1 + sn / sc ) / Math.log(2)	: Math.pow( sc / sn , 2) * kn - kc;	
+    kr = Math.floor(kr * 100) / 100;
+    var calc = sn > sc? kn - kc * Math.log( 1 + sn / sc ) / Math.log(2)	: Math.pow( sc / sn , 2) * kn - kc;
 	return kr > ( calc + kc )? sc * (Math.pow(2, ( kr - calc ) / kc ) - 1) : sc * Math.sqrt( kr / ( kc + calc ) );
 }
 
