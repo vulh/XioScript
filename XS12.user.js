@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.75
+// @version        12.0.76
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.75";
+var version = "12.0.76";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3566,6 +3566,8 @@ function preferencePages(html, url){
             else {
                 policyArray.push("es");
             }
+            //training
+            policyArray.push("et");
         }
 
         if($html.find("a[href$='/holiday_set']").length || $html.find("a[href$='/holiday_unset']").length) {
@@ -3576,10 +3578,6 @@ function preferencePages(html, url){
             else {
                 policyArray.push("eh");
             }
-        }
-        //training
-        if($html.find("a[href*='/window/unit/employees/education/']").length) {
-            policyArray.push("et");
         }
 
         //Has Equipment
