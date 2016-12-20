@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.73
+// @version        12.0.74
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.73";
+var version = "12.0.74";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -719,7 +719,9 @@ var subType = {
 	fuel: [0.2, 0.2, "/img/qualification/car.png"],
 	service: [0.12, 0.12, "/img/qualification/service.png"],
 	service_light: [0.12, 0.12, "/img/qualification/service.png"],
-	office: [0.08, 0.08, "/img/qualification/management.png"]
+    office: [0.08, 0.08, "/img/qualification/management.png"],
+    it: [0.08, 0.08, "/img/qualification/it.png"],
+    educational: [0.12, 0.12, "/img/qualification/educational.png"]
 };
 
 function salePrice(type, subid, choice){	
