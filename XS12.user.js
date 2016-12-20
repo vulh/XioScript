@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.74
+// @version        12.0.75
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.74";
+var version = "12.0.75";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3556,24 +3556,31 @@ function preferencePages(html, url){
     else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+$").test(url) && !$("[name=unit_cancel_build]").length && !$html.find("[href$=delivery]").length){
 		
 		var policyArray = [];
-		
-		//New Interface
-		if($html.find(".fa-users").length){		
-			policyArray.push("en");
-		}
-		else{
-			policyArray.push("es");
-		}
-		
-		//Has stock holiday
-		if($html.find("a[href$=supply]").length){
-			policyArray.push("ep");
-		}
-		else{
-			policyArray.push("eh");
-		}		
-		
-		policyArray.push("et");
+
+        //salary
+        if($html.find("a[href*='/window/unit/employees/engage/']").length) {
+            //New Interface
+            if ($html.find(".fa-users").length) {
+                policyArray.push("en");
+            }
+            else {
+                policyArray.push("es");
+            }
+        }
+
+        if($html.find("a[href$='/holiday_set']").length || $html.find("a[href$='/holiday_unset']").length) {
+            //Has stock holiday
+            if ($html.find("a[href$=supply]").length) {
+                policyArray.push("ep");
+            }
+            else {
+                policyArray.push("eh");
+            }
+        }
+        //training
+        if($html.find("a[href*='/window/unit/employees/education/']").length) {
+            policyArray.push("et");
+        }
 
         //Has Equipment
         if($html.find(".fa-cogs").length || $html.find("[href*='/window/unit/equipment/']").length){
