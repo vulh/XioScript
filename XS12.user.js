@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.76
+// @version        12.0.77
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.76";
+var version = "12.0.77";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1207,7 +1207,7 @@ function retailPrice(type, subid, choice){
 	function phase(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
-		if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7){
+		if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7 || choice[0] === 8){
 			
 			var getcount = mapped[url].history.length;
 						
@@ -1249,13 +1249,20 @@ function retailPrice(type, subid, choice){
 			if(choice[0] === 1){
 				price = 0;
 			}
-			else if(choice[0] === 2){				
-				var priceOld = mapped[mapped[url].history[i]].price[0];
-				var share = mapped[url].share[i];
+            else if(choice[0] === 2){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var share = mapped[url].share[i];
 
-				price = priceOld || 0;
-				price = price * (1 - 0.03 * (share < 8) + 0.03 * (share > 12) );					
-			}
+                price = priceOld || 0;
+                price = price * (1 - 0.03 * (share < 8) + 0.03 * (share > 12) );
+            }
+            else if(choice[0] === 8){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var share = mapped[url].share[i];
+
+                price = priceOld || 0;
+                price = price * (1 - 0.03 * (share < 4.5) + 0.03 * (share > 8) );
+            }
 			else if(choice[0] === 3){				
 				var priceOld = mapped[mapped[url].history[i]].price[0];
 				var priceOlder = mapped[mapped[url].history[i]].price[1];
@@ -3264,8 +3271,8 @@ var policyJSON = {
     },
     pt: {
 		func: retailPrice, 
-		save: [["-", "Zero", "Market", "Turnover", "Stock", "Local", "City", "Sales"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]], 
-		order: [["-", "Zero", "Market", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],  
+		save: [["-", "Zero", "Market 10%", "Turnover", "Stock", "Local", "City", "Sales", "Market 6%"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+		order: [["-", "Zero", "Market 6%", "Market 10%", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
 		name: "priceRetail",
 		group: "Price",
 		wait: []
