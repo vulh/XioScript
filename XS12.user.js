@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.77
+// @version        12.0.78
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.77";
+var version = "12.0.78";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1286,11 +1286,17 @@ function retailPrice(type, subid, choice){
 				price = priceOld * (0.97 + 0.06 * emptystock) || 0;			
 			}
 			else if(choice[0] === 5){				
-				var urlReport = mapped[url].report[i];
-				price = mapped[urlReport].localprice * mapped[url].quality[i] / mapped[urlReport].localquality;				
+			    var urlReport = mapped[url].report[i];
+			    var localPrice = mapped[urlReport].localprice;
+			    var localQuality = mapped[urlReport].localquality;
+			    var myQuality = mapped[url].quality[i];
+				price = calcBaseRetailPrice(myQuality, localPrice, localQuality);
 			}			
 			else if(choice[0] === 6){				
-				price = mapped[url].cityprice[i] * mapped[url].quality[i] / mapped[url].cityquality[i];				
+			    var cityPrice = mapped[url].cityprice[i];
+			    var cityQuality = mapped[url].cityquality[i];
+			    var myQuality = mapped[url].quality[i];
+			    price = calcBaseRetailPrice(myQuality, cityPrice, cityQuality);
 			}
 			else if(choice[0] === 7){
 				var priceOld = mapped[mapped[url].history[i]].price[0];
@@ -1311,10 +1317,12 @@ function retailPrice(type, subid, choice){
 									
 			price = price.toPrecision(4) || 0;
 			
+            // отработка опции 2 на ограничение мин цены продажи
 			var multiplier = [0, 1, 1.1, 1.4, 2];			
 			var prime = Math.round(mapped[url].purch[i] * multiplier[choice[1]]);
 			price = Math.max(price, prime);
 			
+            // если нужно изменить цену товара поднимем флаг
 			if(mapped[url].price[i] !== price && price > 0){
 				change = true;
 				data += "&" + encodeURI(mapped[url].name[i] + "=" + price);
@@ -4334,6 +4342,11 @@ function calcOverflowTop3(employees, qualification, techLevel, factor1, manager)
 	return Math.max(Math.min(6/5, manager / calcTopTech(techLevel), manager / calcTop1(employees, qualification, factor1)), 5/6);
 }
 
+// расчет стартовой цены продажи в маге исходя из цены и кача местных магов
+function calcBaseRetailPrice(myQuality, localPrice, localQuality) {
+    return Math.max(localPrice * (1 + Math.log(myQuality / localQuality)), 0);
+}
+
 function topManagerStats(){
 	var url = "/"+realm+"/main/user/privat/persondata/knowledge";
 	var here = "here";
@@ -4561,3 +4574,4 @@ document.onreadystatechange = function () {
     }
 };
 document.onreadystatechange();
+
