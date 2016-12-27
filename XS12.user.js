@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.78
+// @version        12.0.79
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.78";
+var version = "12.0.79";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1712,6 +1712,8 @@ function salary(type, subid, choice){
         	//"Target"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex]);
+            skillReq = Math.floor(skillReq * 100) / 100;
+            skillReq = Math.max(skillReq, mapped[url].skillReq);
 						
 			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 5) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
@@ -1730,6 +1732,7 @@ function salary(type, subid, choice){
 			//"Maximum"
 			var managerIndex = mapped[urlManager].pic.indexOf(subType[mapped[urlMain].img][2]);
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]);
+            skillReq = Math.floor(skillReq * 100) / 100;
 						
 			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 5) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
@@ -1750,6 +1753,7 @@ function salary(type, subid, choice){
 			var factor3 = subType[mapped[urlMain].img][1];
 			var managerNew = manager * calcOverflowTop1(mapped[urlMain].maxEmployees, factor3, manager);	
 			var skillReq = calcSkill(mapped[url].employees, subType[mapped[urlMain].img][0], managerNew);
+            skillReq = Math.floor(skillReq * 100) / 100;
 						
 			if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 5) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
 				change = true;
@@ -1799,6 +1803,7 @@ function salary(type, subid, choice){
                 load = mapped[url].employees / calcEmployees(skillReq, subType[mapped[urlMain].img][0], mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex]) * 100;
             }
             skillReq -= 0.01;
+            skillReq = Math.floor(skillReq * 100) / 100;
             skillReq = Math.max(skillReq, mapped[url].skillReq);
 
             if(mapped[url].skillNow !== skillReq || (choice[1] !== 3 && choice[1] !== 2 && mapped[url].salaryNow > (mapped[url].salaryCity - .005) * 5) || (choice[1] !== 3 && choice[1] !== 1 && mapped[url].salaryNow < (mapped[url].salaryCity + .005) * 0.8)){
@@ -4280,7 +4285,6 @@ function XioImport(){
 
 function calcSalary(sn, sc, kn, kc, kr){
 	// s = salary, k = skill, n = now, c = city, r = required
-    kr = Math.floor(kr * 100) / 100;
     var calc = sn > sc? kn - kc * Math.log( 1 + sn / sc ) / Math.log(2)	: Math.pow( sc / sn , 2) * kn - kc;
 	return kr > ( calc + kc )? sc * (Math.pow(2, ( kr - calc ) / kc ) - 1) : sc * Math.sqrt( kr / ( kc + calc ) );
 }
