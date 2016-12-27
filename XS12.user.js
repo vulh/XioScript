@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.79
+// @version        12.0.80
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.79";
+var version = "12.0.80";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2814,12 +2814,17 @@ function wareSupply(type, subid, choice, good){
         if(choice[3] > 0){
             minFreeForBuy = 100 * Math.pow(10, choice[3]);
         }
+        var total_price_from = '';
+       //["Any price", "min $1500"]
+        if(choice[4] === 1){
+            total_price_from = '1500';
+        }
 		
 		getcount += 3;
 		xGet("/"+realm+"/window/common/util/setpaging/dbwarehouse/supplyList/40000", "none", false, function(){
 			!--getcount && phase();
 		});
-		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
+		var data = "total_price%5Bfrom%5D=" + total_price_from + "&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
 		xPost("/"+realm+"/window/common/util/setfiltering/dbwarehouse/supplyList", data, function(){
 			!--getcount && phase();
 		});
@@ -3308,8 +3313,18 @@ var policyJSON = {
 	},
 	sh: {
 		func: wareSupply,
-		save: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"], ["Any available volume", "1k", "10k", "100k", "1m", "10m", "100m", "1b", "10b", "100b"]],
-		order: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"], ["None", "Mine", "All", "Other"], ["Remove", "Zeros", "Ones"], ["Any available volume", "1k", "10k", "100k", "1m", "10m", "100m", "1b", "10b", "100b"]],
+		save: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"]
+			, ["None", "Mine", "All", "Other"]
+			, ["Remove", "Zeros", "Ones"]
+            , ["Any available", "min 1k", "min 10k", "min 100k", "min 1m", "min 10m", "min 100m", "min 1b", "min 10b", "min 100b"]
+            , ["Any price", "min $1500"]
+		],
+		order: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"]
+			, ["None", "Mine", "All", "Other"]
+			, ["Remove", "Zeros", "Ones"]
+			, ["Any available", "min 1k", "min 10k", "min 100k", "min 1m", "min 10m", "min 100m", "min 1b", "min 10b", "min 100b"]
+            , ["Any price", "min $1500"]
+		],
 		name: "supplyWare",
 		group: "Supply",
 		wait: ["supplyProd", "supplyRetail"]
