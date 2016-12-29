@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.80
+// @version        12.0.81
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.80";
+var version = "12.0.81";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2796,7 +2796,12 @@ function wareSupply(type, subid, choice, good){
 	var url = "/"+realm+"/main/unit/view/"+subid+"/supply";
 	var urlMain = "/"+realm+"/main/unit/view/"+subid;
 	var urlContract = [];
-	
+
+    var total_price_from = 0;
+    //["Any price", "min $1500"]
+    if(choice[4] === 1){
+        total_price_from = 1500;
+    }
 	var getcount = 2;
 	xGet(url, "waresupply", true, function(){
 		!--getcount && phase();
@@ -2814,17 +2819,12 @@ function wareSupply(type, subid, choice, good){
         if(choice[3] > 0){
             minFreeForBuy = 100 * Math.pow(10, choice[3]);
         }
-        var total_price_from = '';
-       //["Any price", "min $1500"]
-        if(choice[4] === 1){
-            total_price_from = '1500';
-        }
 		
 		getcount += 3;
 		xGet("/"+realm+"/window/common/util/setpaging/dbwarehouse/supplyList/40000", "none", false, function(){
 			!--getcount && phase();
 		});
-		var data = "total_price%5Bfrom%5D=" + total_price_from + "&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
+		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
 		xPost("/"+realm+"/window/common/util/setfiltering/dbwarehouse/supplyList", data, function(){
 			!--getcount && phase();
 		});
@@ -2875,8 +2875,8 @@ function wareSupply(type, subid, choice, good){
 	
 	var change = [];
 	var deletechange = false;
-	var deletestring = "contractDestroy=1";	
-	
+	var deletestring = "contractDestroy=1";
+
 	function post(){
         $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 		
@@ -2909,18 +2909,33 @@ function wareSupply(type, subid, choice, good){
 			var jstart = j;
 			supplier = [];
 			while(mapped[urlMain].product[i] === mapped[url].product[j]){
-				supplier.push({
-					available : mapped[url].available[j],
-					PQR : mapped[url].price[j] / mapped[url].quality[j],
-					offer : mapped[url].offer[j],
-					myself : mapped[url].myself[j],
-					index : j, 
-					sup : j-jstart,
-                    priceMarkUp 	    : mapped[url].price_mark_up[j],
-                    priceConstraint     : mapped[url].price_constraint_max[j],
-                    constraintPriceType : mapped[url].price_constraint_type[j],
-                    qualityMin          : mapped[url].quality_constraint_min[j]
-				});
+                if(total_price_from <= mapped[url].price[j]) {
+                    supplier.push({
+                        available: mapped[url].available[j],
+                        PQR: mapped[url].price[j] / mapped[url].quality[j],
+                        offer: mapped[url].offer[j],
+                        myself: mapped[url].myself[j],
+                        index: j,
+                        sup: j - jstart,
+                        priceMarkUp: mapped[url].price_mark_up[j],
+                        priceConstraint: mapped[url].price_constraint_max[j],
+                        constraintPriceType: mapped[url].price_constraint_type[j],
+                        qualityMin: mapped[url].quality_constraint_min[j]
+                    });
+                } else {
+                    supplier.push({
+                        available: 0,
+                        PQR: mapped[url].price[j] / mapped[url].quality[j],
+                        offer: mapped[url].offer[j],
+                        myself: mapped[url].myself[j],
+                        index: j,
+                        sup: j - jstart,
+                        priceMarkUp: mapped[url].price_mark_up[j],
+                        priceConstraint: mapped[url].price_constraint_max[j],
+                        constraintPriceType: mapped[url].price_constraint_type[j],
+                        qualityMin: mapped[url].quality_constraint_min[j]
+                    });
+				}
 				j++;					
 			}			
 							
@@ -2969,14 +2984,25 @@ function wareSupply(type, subid, choice, good){
 						
 				for(var k = 0; k < mapped[urlContract[i]].offer.length; k++){
 					if(offers.indexOf(mapped[urlContract[i]].offer[k]) === -1 && (mapped[urlContract[i]].tm[k] === product || !mapped[urlContract[i]].tm[k] && mapped[urlContract[i]].product === product) && blackmail.indexOf(mapped[urlContract[i]].company[k]) === -1){
-						mix.push({
-							available : mapped[urlContract[i]].available[k],
-							PQR : mapped[urlContract[i]].price[k] / mapped[urlContract[i]].quality[k],
-							offer : mapped[urlContract[i]].offer[k],
-							company : mapped[urlContract[i]].company[k],
-							myself : mapped[urlContract[i]].myself[k],
-							row : k
-						});									
+                        if(total_price_from <= mapped[urlContract[i]].price[k]) {
+                            mix.push({
+                                available : mapped[urlContract[i]].available[k],
+                                PQR : mapped[urlContract[i]].price[k] / mapped[urlContract[i]].quality[k],
+                                offer : mapped[urlContract[i]].offer[k],
+                                company : mapped[urlContract[i]].company[k],
+                                myself : mapped[urlContract[i]].myself[k],
+                                row : k
+                            });
+                        } else {
+                            mix.push({
+                                available : 0,
+                                PQR : mapped[urlContract[i]].price[k] / mapped[urlContract[i]].quality[k],
+                                offer : mapped[urlContract[i]].offer[k],
+                                company : mapped[urlContract[i]].company[k],
+                                myself : mapped[urlContract[i]].myself[k],
+                                row : k
+                            });
+						}
 					}
 				}
 						
