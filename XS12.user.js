@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.81
+// @version        12.0.82
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.81";
+var version = "12.0.82";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -376,7 +376,8 @@ function map(html, url, page){
             price_constraint_max : $html.find("input[name^='supplyContractData[price_constraint_max]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
             price_constraint_type : $html.find("input[name^='supplyContractData[constraintPriceType]']").map( function(i, e){ return $(e).val(); }).get(),
             quality_constraint_min : $html.find("input[name^='supplyContractData[quality_constraint_min]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			product : $html.find("tr:has(input:text[name])").map( function(i, e){ return $(e).prevAll(".p_title:first").find("strong:eq(0)").text(); }).get(),
+            product : $html.find("tr:has(input:text[name])").map( function(i, e){ return $(e).prevAll(".p_title:first").find("strong:eq(0)").text(); }).get(),
+            productID : $html.find("tr:has(input:text[name])").map( function(i, e){ return $(e).prevAll(".p_title:first").find('div:nth-child(1) > div:nth-child(2) > a:nth-child(2):has(img)').attr('href').match(/(step1\/?)\d+/)[0].split("/")[1]; }).get(),
 			price : $html.find("tr:has(input) td:nth-child(4)").map( function(i, e){ return numberfy($(e).text().match(/(\d|\.|\s)+$/)); }).get(),
 			reprice : $html.find("tr:has(input) td:nth-child(4)").map( function(i, e){ return !!$(e).find("span").length; }).get(),
 			quality : $html.find("tr:has(input) td:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -2797,11 +2798,6 @@ function wareSupply(type, subid, choice, good){
 	var urlMain = "/"+realm+"/main/unit/view/"+subid;
 	var urlContract = [];
 
-    var total_price_from = 0;
-    //["Any price", "min $1500"]
-    if(choice[4] === 1){
-        total_price_from = 1500;
-    }
 	var getcount = 2;
 	xGet(url, "waresupply", true, function(){
 		!--getcount && phase();
@@ -2811,20 +2807,11 @@ function wareSupply(type, subid, choice, good){
 	});
 
     if(choice[1] >= 1){
-        var minFreeForBuy = 1;
-        //"Any available volume"
-        // , "1k", "10k", "100k"
-        // , "1m", "10m", "100m"
-        // , "1b", "10b", "100b"
-        if(choice[3] > 0){
-            minFreeForBuy = 100 * Math.pow(10, choice[3]);
-        }
-		
 		getcount += 3;
 		xGet("/"+realm+"/window/common/util/setpaging/dbwarehouse/supplyList/40000", "none", false, function(){
 			!--getcount && phase();
 		});
-		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=" + minFreeForBuy + "&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
+		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
 		xPost("/"+realm+"/window/common/util/setfiltering/dbwarehouse/supplyList", data, function(){
 			!--getcount && phase();
 		});
@@ -2909,7 +2896,29 @@ function wareSupply(type, subid, choice, good){
 			var jstart = j;
 			supplier = [];
 			while(mapped[urlMain].product[i] === mapped[url].product[j]){
-                if(total_price_from <= mapped[url].price[j]) {
+				var suitable  = true;
+                var minAvailable = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_available"]) || 0;
+                if(minAvailable <= 0 || minAvailable <= mapped[url].available[j]) { suitable = true; } else { suitable = false; }
+
+                if(suitable) {
+                    var minPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_price"]) || 0;
+                    if(minPrice <= 0 || minPrice <= mapped[url].price[j]) { suitable = true; } else { suitable = false; }
+				}
+                if(suitable) {
+					var maxPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_price"]) || 0;
+					if(maxPrice <= 0 || mapped[url].price[j] <= maxPrice) { suitable = true; } else { suitable = false; }
+                }
+
+                if(suitable) {
+					var minQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_quality"]) || 0;
+                    if(minQuality <= 0 || minQuality <= mapped[url].quality[j]) { suitable = true; } else { suitable = false; }
+                }
+				if(suitable) {
+                	var maxQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_quality"]) || 0;
+                    if(maxQuality <= 0 || mapped[url].quality[j] <= maxQuality) { suitable = true; } else { suitable = false; }
+				}
+
+                if(suitable) {
                     supplier.push({
                         available: mapped[url].available[j],
                         PQR: mapped[url].price[j] / mapped[url].quality[j],
@@ -2984,7 +2993,34 @@ function wareSupply(type, subid, choice, good){
 						
 				for(var k = 0; k < mapped[urlContract[i]].offer.length; k++){
 					if(offers.indexOf(mapped[urlContract[i]].offer[k]) === -1 && (mapped[urlContract[i]].tm[k] === product || !mapped[urlContract[i]].tm[k] && mapped[urlContract[i]].product === product) && blackmail.indexOf(mapped[urlContract[i]].company[k]) === -1){
-                        if(total_price_from <= mapped[urlContract[i]].price[k]) {
+
+                        var suitable  = true;
+                        j = 0;
+                        while(mapped[urlMain].product[i] === mapped[url].product[j]){
+							var minAvailable = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_available"]) || 0;
+							if(minAvailable <= 0 || minAvailable <= mapped[urlContract[i]].available[k]) { suitable = true; } else { suitable = false; }
+
+							if(suitable) {
+								var minPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_price"]) || 0;
+								if(minPrice <= 0 || minPrice <= mapped[urlContract[i]].price[k]) { suitable = true; } else { suitable = false; }
+							}
+							if(suitable) {
+								var maxPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_price"]) || 0;
+								if(maxPrice <= 0 || mapped[urlContract[i]].price[k] <= maxPrice) { suitable = true; } else { suitable = false; }
+							}
+
+							if(suitable) {
+								var minQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_quality"]) || 0;
+								if(minQuality <= 0 || minQuality <= mapped[urlContract[i]].quality[k]) { suitable = true; } else { suitable = false; }
+							}
+							if(suitable) {
+								var maxQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_quality"]) || 0;
+								if(maxQuality <= 0 || mapped[urlContract[i]].quality[k] <= maxQuality) { suitable = true; } else { suitable = false; }
+							}
+                            j++;
+                        }
+
+                        if(suitable) {
                             mix.push({
                                 available : mapped[urlContract[i]].available[k],
                                 PQR : mapped[urlContract[i]].price[k] / mapped[urlContract[i]].quality[k],
@@ -3255,7 +3291,64 @@ function wareSize(type, subid, choice){
 		
 	}
 }
+function wareSupplyShowAdditionSettings(){
+    var subid = numberfy(document.URL.match(/(view\/?)\d+/)[0].split("/")[1]);
 
+    $('table > tbody > tr.p_title > td:nth-child(5)').each(function(){
+    	var cell = $(this);
+    	var productID = $('> td.p_title_l > div:nth-child(1) > div:nth-child(2) > a:nth-child(2):has(img)', cell.parent()).attr('href').match(/(step1\/?)\d+/)[0].split("/")[1];
+
+        var minAvailableLabel = 'min available';
+        var minAvailableEditor = $('<input type="number" step="1" style="width: 50px; text-align: right">');
+        minAvailableEditor.val(ls["supply" + productID + realm + subid + "min_available"] || 0);
+        minAvailableEditor.change(function(){
+            ls["supply" + productID + realm + subid + "min_available"] = $(this).val() || 0;
+        });
+
+        var minPriceLabel = 'min price';
+        var minPriceEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
+        minPriceEditor.val(ls["supply" + productID + realm + subid + "min_price"] || 0);
+        minPriceEditor.change(function(){
+            ls["supply" + productID + realm + subid + "min_price"] = $(this).val() || 0;
+        });
+
+        var maxPriceLabel = 'max price';
+        var maxPriceEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
+        maxPriceEditor.val(ls["supply" + productID + realm + subid + "max_price"] || 0);
+        maxPriceEditor.change(function(){
+            ls["supply" + productID + realm + subid + "max_price"] = $(this).val() || 0;
+        });
+
+        cell.append(minAvailableLabel).append('<br>').append(minAvailableEditor).append('<br>')
+            .append(minPriceLabel).append('<br>').append(minPriceEditor).append('<br>')
+            .append(maxPriceLabel).append('<br>').append(maxPriceEditor);
+	});
+
+    $('table > tbody > tr.p_title > td:nth-child(7)').each(function(){
+        var cell = $(this);
+        var productID = $('> td.p_title_l > div:nth-child(1) > div:nth-child(2) > a:nth-child(2):has(img)', cell.parent()).attr('href').match(/(step1\/?)\d+/)[0].split("/")[1];
+
+        var minQualityLabel = 'min quality';
+        var minQualityEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
+        minQualityEditor.val(ls["supply" + productID + realm + subid + "min_quality"] || 0);
+        minQualityEditor.change(function(){
+            ls["supply" + productID + realm + subid + "min_quality"] = $(this).val() || 0;
+        });
+
+        var maxQualityLabel = 'max quality';
+        var maxQualityEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
+        maxQualityEditor.val(ls["supply" + productID + realm + subid + "max_quality"] || 0);
+        maxQualityEditor.change(function(){
+            ls["supply" + productID + realm + subid + "max_quality"] = $(this).val() || 0;
+        });
+
+        cell.append(minQualityLabel).append('<br>').append(minQualityEditor).append('<br>')
+            .append(maxQualityLabel).append('<br>').append(maxQualityEditor);
+    });
+}
+var blankFunction = function(){
+    return undefined;
+};
 var policyJSON = {
     pp: {
 		func: salePrice, 
@@ -3263,7 +3356,8 @@ var policyJSON = {
 		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock", "Output"], ["Keep", "Reject"]],
 		name: "priceProd",
 		group: "Price",
-		wait: []
+		wait: [],
+		showAdditionSettings: blankFunction
 	},
 	pw: {
 		func: salePrice, 
@@ -3271,7 +3365,8 @@ var policyJSON = {
 		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock"], ["Keep", "Reject"]],
 		name: "priceProd",
 		group: "Price",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
 	ps: {
 		func: salePolicy, 
@@ -3279,7 +3374,8 @@ var policyJSON = {
 		order: [["-", "No sale", "Any", "Company", "Corp."], ["All", "Output"]],
 		name: "policy",
 		group: "Policy",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
 	pn: {
 		func: salePolicy, 
@@ -3287,7 +3383,8 @@ var policyJSON = {
 		order: [["-", "No sale", "Any", "Company", "Corp."]],
 		name: "policy",
 		group: "Policy",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
     sc: {
         func: servicePrice,
@@ -3295,7 +3392,8 @@ var policyJSON = {
         order: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
         name: "priceService",
         group: "Price",
-        wait: []
+        wait: [],
+        showAdditionSettings: blankFunction
     },
     sl: {
         func: serviceWithoutStockPrice,
@@ -3303,7 +3401,8 @@ var policyJSON = {
         order: [["-", "Sales", "Turnover"]],
         name: "priceService",
         group: "Price",
-        wait: []
+        wait: [],
+        showAdditionSettings: blankFunction
     },
     ee: {
         func: incineratorPrice,
@@ -3311,7 +3410,8 @@ var policyJSON = {
         order: [["-", "Max"]],
         name: "priceService",
         group: "Price",
-        wait: []
+        wait: [],
+        showAdditionSettings: blankFunction
     },
     pt: {
 		func: retailPrice, 
@@ -3319,7 +3419,8 @@ var policyJSON = {
 		order: [["-", "Zero", "Market 6%", "Market 10%", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
 		name: "priceRetail",
 		group: "Price",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
 	sp: {
 		func: prodSupply, 
@@ -3327,7 +3428,8 @@ var policyJSON = {
 		order: [["-", "Zero", "Required", "Stock", "Remove"]],
 		name: "supplyProd",
 		group: "Supply",
-		wait: ["priceProd", "policy", "tech", "equip"]
+		wait: ["priceProd", "policy", "tech", "equip"],
+        showAdditionSettings: blankFunction
 	},
 	sr: {
 		func: storeSupply, 
@@ -3335,25 +3437,23 @@ var policyJSON = {
 		order: [["-", "Zero", "Sold", "Stock", "Amplify", "Enhance"], ["None", "One", "$1 000", "$1 000 000", "Market 1%", "Market 5%", "Market 10%"], ["Any Q", "Local Q", "City Q"]],
 		name: "supplyRetail",
 		group: "Supply",
-		wait: ["priceProd", "policy"]
+		wait: ["priceProd", "policy"],
+        showAdditionSettings: blankFunction
 	},
 	sh: {
 		func: wareSupply,
 		save: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"]
 			, ["None", "Mine", "All", "Other"]
 			, ["Remove", "Zeros", "Ones"]
-            , ["Any available", "min 1k", "min 10k", "min 100k", "min 1m", "min 10m", "min 100m", "min 1b", "min 10b", "min 100b"]
-            , ["Any price", "min $1500"]
 		],
 		order: [["-", "Zero", "Required", "Stock", "Enhance", "Nuance", "Maximum"]
 			, ["None", "Mine", "All", "Other"]
 			, ["Remove", "Zeros", "Ones"]
-			, ["Any available", "min 1k", "min 10k", "min 100k", "min 1m", "min 10m", "min 100m", "min 1b", "min 10b", "min 100b"]
-            , ["Any price", "min $1500"]
 		],
 		name: "supplyWare",
 		group: "Supply",
-		wait: ["supplyProd", "supplyRetail"]
+		wait: ["supplyProd", "supplyRetail"],
+        showAdditionSettings: wareSupplyShowAdditionSettings
 	},
 	ad: {
 		func: advertisement,
@@ -3361,7 +3461,8 @@ var policyJSON = {
 		order: [["-", "Zero", "Min TV", "Req", "Pop1", "Pop2", "Pop5", "Pop10", "Pop20", "Pop50", "Max"]],
 		name: "ads",
 		group: "Ads",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
 	es: {
 		func: salary, 
@@ -3369,7 +3470,8 @@ var policyJSON = {
 		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
 		name: "salaryOldInterface",
 		group: "Salary",
-		wait: ["equip"]
+		wait: ["equip"],
+        showAdditionSettings: blankFunction
 	},	
 	en: {
 		func: salary, 
@@ -3377,7 +3479,8 @@ var policyJSON = {
 		order: [["-", "Required", "Target", "Maximum", "Overflow", "20%top1", "30%top1", "39%top1", "50%top1", "60%top1", "69%top1", "119%top1", "130%top1", "139%top1"],["min 80% max 500%","max 500%","min 80%","No bound"]],
 		name: "salaryNewInterface",
 		group: "Salary",
-		wait: ["equip"]
+		wait: ["equip"],
+        showAdditionSettings: blankFunction
 	},
 	eh: {
 		func: holiday, 
@@ -3385,7 +3488,8 @@ var policyJSON = {
 		order: [["-", "Holiday", "Working"]], 
 		name: "holidayElse",
 		group: "Holiday",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},	
 	ep: {
 		func: holiday, 
@@ -3393,7 +3497,8 @@ var policyJSON = {
 		order: [["-", "Holiday", "Working", "Stock"]], 
 		name: "holidayProd",
 		group: "Holiday",
-		wait: ["priceProd"]
+		wait: ["priceProd"],
+        showAdditionSettings: blankFunction
 	},
 	et: {
 		func: training, 
@@ -3401,7 +3506,8 @@ var policyJSON = {
 		order: [["-", "Always", "City Salary", "1 Year"]], 
 		name: "training",
 		group: "Training",
-		wait: ["salaryNewInterface", "salaryOldInterface"]
+		wait: ["salaryNewInterface", "salaryOldInterface"],
+        showAdditionSettings: blankFunction
 	},
 	qm: {
 		func: equipment, 
@@ -3409,7 +3515,8 @@ var policyJSON = {
 		order: [["-", "Required", "Maximal", "Q2.00"], ["Black", "Full", "Perc"]], 
 		name: "equip",
 		group: "Equipment",
-		wait: ["tech", "research"]
+		wait: ["tech", "research"],
+        showAdditionSettings: blankFunction
 	},
 	tc: {
 		func: technology,
@@ -3417,7 +3524,8 @@ var policyJSON = {
 		order: [["-", "Research"]],
 		name: "tech",
 		group: "Technology",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
 	rs: {
 		func: research,
@@ -3425,7 +3533,8 @@ var policyJSON = {
 		order: [["-", "Continue"]],
 		name: "research",
 		group: "Research",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},	
 	pb: {
 		func: prodBooster,
@@ -3433,7 +3542,8 @@ var policyJSON = {
 		order: [["-", "Always", "Profitable"]],
 		name: "solars",
 		group: "Solars",
-		wait: []
+		wait: [],
+        showAdditionSettings: blankFunction
 	},
     pa: {
         func: politicAgitation,
@@ -3441,7 +3551,8 @@ var policyJSON = {
         order: [["-", "Continuous agitation"]],
         name: "politics",
         group: "Politics",
-        wait: []
+        wait: [],
+        showAdditionSettings: blankFunction
     },
     wz: {
         func: wareSize,
@@ -3449,7 +3560,8 @@ var policyJSON = {
         order: [["-", "Packed", "Full"]],
         name: "size",
         group: "Size",
-        wait: []
+        wait: [],
+        showAdditionSettings: blankFunction
     }
 };
 
@@ -3518,7 +3630,8 @@ function preference(policies){
 		}
 
 		htmlstring += "</td>";
-		
+
+        policyJSON[policies[i]].showAdditionSettings();
 	}
 	
 	$("#XMHead").html(headstring);
