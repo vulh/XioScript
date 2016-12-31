@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.82
+// @version        12.0.83
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.82";
+var version = "12.0.83";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2811,7 +2811,7 @@ function wareSupply(type, subid, choice, good){
 		xGet("/"+realm+"/window/common/util/setpaging/dbwarehouse/supplyList/40000", "none", false, function(){
 			!--getcount && phase();
 		});
-		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
+		var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bfrom%5D=&free_for_buy%5Bfrom%5D=1&brand_value%5Bfrom%5D=&brand_value%5Bto%5D=";
 		xPost("/"+realm+"/window/common/util/setfiltering/dbwarehouse/supplyList", data, function(){
 			!--getcount && phase();
 		});
