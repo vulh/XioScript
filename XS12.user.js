@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.84
+// @version        12.0.85
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.84";
+var version = "12.0.85";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2941,7 +2941,9 @@ function wareSupply(type, subid, choice, good){
                         priceMarkUp: mapped[url].price_mark_up[j],
                         priceConstraint: mapped[url].price_constraint_max[j],
                         constraintPriceType: mapped[url].price_constraint_type[j],
-                        qualityMin: mapped[url].quality_constraint_min[j]
+                        qualityMin: mapped[url].quality_constraint_min[j],
+                        price: mapped[url].price[j],
+                        quality: mapped[url].quality[j]
                     });
                 } else {
                     supplier.push({
@@ -2954,7 +2956,9 @@ function wareSupply(type, subid, choice, good){
                         priceMarkUp: mapped[url].price_mark_up[j],
                         priceConstraint: mapped[url].price_constraint_max[j],
                         constraintPriceType: mapped[url].price_constraint_type[j],
-                        qualityMin: mapped[url].quality_constraint_min[j]
+                        qualityMin: mapped[url].quality_constraint_min[j],
+						price: mapped[url].price[j],
+                        quality: mapped[url].quality[j]
                     });
 				}
 				j++;					
@@ -3002,7 +3006,8 @@ function wareSupply(type, subid, choice, good){
 				
 				var mix = supplier.slice();
 				var indexcount = mix.length;
-						
+
+				//add new available suppliers for mixing
 				for(var k = 0; k < mapped[urlContract[i]].offer.length; k++){
 					if(offers.indexOf(mapped[urlContract[i]].offer[k]) === -1 && (mapped[urlContract[i]].tm[k] === product || !mapped[urlContract[i]].tm[k] && mapped[urlContract[i]].product === product) && blackmail.indexOf(mapped[urlContract[i]].company[k]) === -1){
 
@@ -3035,7 +3040,9 @@ function wareSupply(type, subid, choice, good){
                                 offer : mapped[urlContract[i]].offer[k],
                                 company : mapped[urlContract[i]].company[k],
                                 myself : mapped[urlContract[i]].myself[k],
-                                row : k
+                                row : k,
+                                price: mapped[urlContract[i]].price[k],
+                                quality: mapped[urlContract[i]].quality[k]
                             });
                         } else {
                             mix.push({
@@ -3044,7 +3051,9 @@ function wareSupply(type, subid, choice, good){
                                 offer : mapped[urlContract[i]].offer[k],
                                 company : mapped[urlContract[i]].company[k],
                                 myself : mapped[urlContract[i]].myself[k],
-                                row : k
+                                row : k,
+                                price: mapped[urlContract[i]].price[k],
+                                quality: mapped[urlContract[i]].quality[k]
                             });
 						}
 					}
@@ -3057,31 +3066,113 @@ function wareSupply(type, subid, choice, good){
 				if(choice[2] === 0){
 					set = Math.max(set, 1);
 				}
-				
+                var mix_quality = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "mix_quality"]) || 0;
+				//solve backpack problem
+				if (mix_quality > 0 && set > 0) {
+                    mix_quality = mix_quality + 0.01;
+					var tmpArr = [];
+                    for(var k = 0; k < mix.length; k++) {
+                    	if(mix[k].available > 0){
+                            tmpArr.push({
+                                offer: 		mix[k].offer,
+                                price:		mix[k].price,
+                                quality:	mix[k].quality,
+                                available:	mix[k].available
+							});
+                        }
+                    }
+                    //console.log(JSON.stringify(tmpArr));
+
+                    var calcMix = function (volume1, quality1, volume2, quality2){
+                        return quality1 * volume1 / (volume1 + volume2) + quality2 * volume2 / (volume1 + volume2)
+					};
+                    var maxResultVolume = set;
+                    var resultVolume = 0;
+                    var resultQuality = 0;
+                    var resultPrice = 0;
+                    var tmpResultVolume = 0;
+                    var tmpMixQuality = 0;
+                    var tryCnt = 0;
+                    var found = false;
+                    // var cntBeforeLog = 0;
+
+                    while(true) {
+                        tmpResultVolume = resultVolume;
+                        for (var k = 0; k < tmpArr.length; k++) {
+                            found = false;
+                            for (var n = 1; n <= Math.min(tmpArr[k].available, maxResultVolume - resultVolume); n = n + Math.ceil(Math.min(tmpArr[k].available, maxResultVolume - resultVolume)/1000)) {
+                                tmpMixQuality = calcMix(n, tmpArr[k].quality, resultVolume, resultQuality);
+                                if ((tmpMixQuality >= mix_quality && resultQuality < mix_quality) || (tmpMixQuality < mix_quality && resultQuality >= mix_quality)) {
+                                    resultQuality = tmpMixQuality;
+                                    resultVolume = resultVolume + n;
+                                    tmpArr[k].available = tmpArr[k].available - n;
+                                    resultPrice = calcMix(n, tmpArr[k].price, resultVolume, resultPrice);
+                                    // ++cntBeforeLog;
+                                    // if(cntBeforeLog > 1000){
+                                     //    console.log("resultQuality = " + resultQuality);
+                                     //    console.log("resultVolume = " + resultVolume);
+                                     //    console.log("resultPrice = " + resultPrice);
+                                     //    cntBeforeLog = 0;
+									// }
+                                    found = true;
+                                    break;
+                                }
+                            }
+                            if(found || resultVolume >= maxResultVolume){
+                                break;
+                            }
+                        }
+                        ++tryCnt;
+                        if(tryCnt >= maxResultVolume){
+                            break;
+                        }
+                        if(resultVolume >= maxResultVolume){
+                        	break;
+						}
+                        if (tmpResultVolume === resultVolume) {
+                            postMessage("Cant mix quality " + mix_quality + " for product " + product + " in warehouse <a href=" + url + ">" + subid + "</a>");
+                            break;
+                        }
+                    }
+                    //invert mix array available
+                    if(maxResultVolume === resultVolume){
+                        var tmpMixArr = [];
+                        for(var k = 0; k < mix.length; k++) {
+                            for (var t = 0; t < tmpArr.length; t++) {
+                                if (mix[k].offer === tmpArr[t].offer) {
+                                    mix[k].available = mix[k].available - tmpArr[t].available;
+                                    tmpMixArr.push(mix[k]);
+                                }
+                            }
+                        }
+                        mix = tmpMixArr;
+					}
+				}
+
 				for(var k = 0; k < mix.length; k++){
-					
-					var comp = mix[k].myself && choice[1] === 1 || !mix[k].myself && choice[1] === 3 || choice[1] === 2;					
-					var toset = Math.min(set, mix[k].available) * comp;				
+
+					var comp = mix[k].myself && choice[1] === 1 || !mix[k].myself && choice[1] === 3 || choice[1] === 2;
+					var toset = Math.min(set, mix[k].available) * comp;
 					set -= toset;
-									
+
 					if(choice[2] === 2 && mix[k].index >= 0){
 						toset = Math.max(toset, 1);
-					}	
-							
-					if(mix[k].available && (toset > 0 || choice[2] >= 1 && mix[k].index >= 0) && (mix[k].row >= 0 || mix[k].index >= 0 && (mapped[url].parcel[mix[k].index] !== toset || mapped[url].reprice[mix[k].index]))){											
+					}
+
+					if(mix[k].available && (toset > 0 || choice[2] >= 1 && mix[k].index >= 0) && (mix[k].row >= 0 || mix[k].index >= 0 && (mapped[url].parcel[mix[k].index] !== toset || mapped[url].reprice[mix[k].index]))){
 						change.push({
 							'newsup' : mix[k].row >= 0,
 							'offer'  : mix[k].offer,
 							'amount' : toset,
 							'company' : mix[k].company,
 							'good' : product,
-                            'priceMarkUp'         : mix[k].priceMarkUp,
-                            'priceConstraint'     : mix[k].priceConstraint,
-                            'constraintPriceType' : mix[k].constraintPriceType,
-                            'qualityMin'          : mix[k].qualityMin
+							'priceMarkUp'         : mix[k].priceMarkUp,
+							'priceConstraint'     : mix[k].priceConstraint,
+							'constraintPriceType' : mix[k].constraintPriceType,
+							'qualityMin'          : mix[k].qualityMin
 						});
 						if(mix[k].row >= 0){
-							mapped[urlContract[i]].available[mix[k].index] -= toset;		
+							mapped[urlContract[i]].available[mix[k].index] -= toset;
 						}
 					}
 					else if(mix[k].index >= 0 && toset === 0 && choice[2] === 0 || mix[k].index >= 0 && !mix[k].available){
@@ -3090,6 +3181,7 @@ function wareSupply(type, subid, choice, good){
 						supplier.splice(mix[k].sup, 1);
 					}
 				}
+
 				
 				if(set > 0){
 					postMessage("Not enough suppliers for product "+product+" in warehouse <a href="+url+">"+subid+"</a>");
@@ -3331,6 +3423,20 @@ function wareSupplyShowAdditionSettings(){
             .append(minPriceLabel).append('<br>').append(minPriceEditor).append('<br>')
             .append(maxPriceLabel).append('<br>').append(maxPriceEditor);
 	});
+
+    $('table > tbody > tr.p_title > td:nth-child(6)').each(function(){
+        var cell = $(this);
+        var productID = $('> td.p_title_l > div:nth-child(1) > div:nth-child(2) > a:nth-child(2):has(img)', cell.parent()).attr('href').match(/(step1\/?)\d+/)[0].split("/")[1];
+
+        var minResultQualityLabel = 'mix quality';
+        var minResultQualityEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
+        minResultQualityEditor.val(ls["supply" + productID + realm + subid + "mix_quality"] || 0);
+        minResultQualityEditor.change(function(){
+            ls["supply" + productID + realm + subid + "mix_quality"] = $(this).val() || 0;
+        });
+
+        cell.prepend('<br>').prepend('<br>').prepend(minResultQualityEditor).prepend('<br>').prepend(minResultQualityLabel);
+    });
 
     $('table > tbody > tr.p_title > td:nth-child(7)').each(function(){
         var cell = $(this);
