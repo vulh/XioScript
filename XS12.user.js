@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.83
+// @version        12.0.84
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.83";
+var version = "12.0.84";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2870,6 +2870,17 @@ function wareSupply(type, subid, choice, good){
 		var supplier = [];
 		var j = 0;		
 		var x = 0;
+
+        mapped[urlMain].productID = [];
+        for(var i = 0; i < mapped[urlMain].product.length; i++){
+            for(var k = 0; k < mapped[url].productID.length; k++){
+				if(mapped[urlMain].product[i] === mapped[url].product[k]){
+                    mapped[urlMain].productID[i] = mapped[url].productID[k];
+                    break;
+                }
+            }
+        }
+		//iterate over uniq product list
 		for(var i = 0; i < mapped[urlMain].product.length; i++){		
 						
 			var newsupply = 0;			
@@ -2895,26 +2906,27 @@ function wareSupply(type, subid, choice, good){
 			
 			var jstart = j;
 			supplier = [];
+			//iterate over product suppliers
 			while(mapped[urlMain].product[i] === mapped[url].product[j]){
 				var suitable  = true;
-                var minAvailable = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_available"]) || 0;
+                var minAvailable = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_available"]) || 0;
                 if(minAvailable <= 0 || minAvailable <= mapped[url].available[j]) { suitable = true; } else { suitable = false; }
 
                 if(suitable) {
-                    var minPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_price"]) || 0;
+                    var minPrice = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_price"]) || 0;
                     if(minPrice <= 0 || minPrice <= mapped[url].price[j]) { suitable = true; } else { suitable = false; }
 				}
                 if(suitable) {
-					var maxPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_price"]) || 0;
+					var maxPrice = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "max_price"]) || 0;
 					if(maxPrice <= 0 || mapped[url].price[j] <= maxPrice) { suitable = true; } else { suitable = false; }
                 }
 
                 if(suitable) {
-					var minQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_quality"]) || 0;
+					var minQuality = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_quality"]) || 0;
                     if(minQuality <= 0 || minQuality <= mapped[url].quality[j]) { suitable = true; } else { suitable = false; }
                 }
 				if(suitable) {
-                	var maxQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_quality"]) || 0;
+                	var maxQuality = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "max_quality"]) || 0;
                     if(maxQuality <= 0 || mapped[url].quality[j] <= maxQuality) { suitable = true; } else { suitable = false; }
 				}
 
@@ -2995,30 +3007,26 @@ function wareSupply(type, subid, choice, good){
 					if(offers.indexOf(mapped[urlContract[i]].offer[k]) === -1 && (mapped[urlContract[i]].tm[k] === product || !mapped[urlContract[i]].tm[k] && mapped[urlContract[i]].product === product) && blackmail.indexOf(mapped[urlContract[i]].company[k]) === -1){
 
                         var suitable  = true;
-                        j = 0;
-                        while(mapped[urlMain].product[i] === mapped[url].product[j]){
-							var minAvailable = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_available"]) || 0;
-							if(minAvailable <= 0 || minAvailable <= mapped[urlContract[i]].available[k]) { suitable = true; } else { suitable = false; }
+						var minAvailable = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_available"]) || 0;
+						if(minAvailable <= 0 || minAvailable <= mapped[urlContract[i]].available[k]) { suitable = true; } else { suitable = false; }
 
-							if(suitable) {
-								var minPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_price"]) || 0;
-								if(minPrice <= 0 || minPrice <= mapped[urlContract[i]].price[k]) { suitable = true; } else { suitable = false; }
-							}
-							if(suitable) {
-								var maxPrice = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_price"]) || 0;
-								if(maxPrice <= 0 || mapped[urlContract[i]].price[k] <= maxPrice) { suitable = true; } else { suitable = false; }
-							}
+						if(suitable) {
+							var minPrice = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_price"]) || 0;
+							if(minPrice <= 0 || minPrice <= mapped[urlContract[i]].price[k]) { suitable = true; } else { suitable = false; }
+						}
+						if(suitable) {
+							var maxPrice = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "max_price"]) || 0;
+							if(maxPrice <= 0 || mapped[urlContract[i]].price[k] <= maxPrice) { suitable = true; } else { suitable = false; }
+						}
 
-							if(suitable) {
-								var minQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "min_quality"]) || 0;
-								if(minQuality <= 0 || minQuality <= mapped[urlContract[i]].quality[k]) { suitable = true; } else { suitable = false; }
-							}
-							if(suitable) {
-								var maxQuality = parseFloat(ls["supply" + mapped[url].productID[j] + realm + subid + "max_quality"]) || 0;
-								if(maxQuality <= 0 || mapped[urlContract[i]].quality[k] <= maxQuality) { suitable = true; } else { suitable = false; }
-							}
-                            j++;
-                        }
+						if(suitable) {
+							var minQuality = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "min_quality"]) || 0;
+							if(minQuality <= 0 || minQuality <= mapped[urlContract[i]].quality[k]) { suitable = true; } else { suitable = false; }
+						}
+						if(suitable) {
+							var maxQuality = parseFloat(ls["supply" + mapped[urlMain].productID[i] + realm + subid + "max_quality"]) || 0;
+							if(maxQuality <= 0 || mapped[urlContract[i]].quality[k] <= maxQuality) { suitable = true; } else { suitable = false; }
+						}
 
                         if(suitable) {
                             mix.push({
