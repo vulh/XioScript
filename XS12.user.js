@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.85
+// @version        12.0.86
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.85";
+var version = "12.0.86";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3094,8 +3094,9 @@ function wareSupply(type, subid, choice, good){
                     var tmpMixQuality = 0;
                     var tryCnt = 0;
                     var found = false;
-                    // var cntBeforeLog = 0;
+                     var cntBeforeLog = 0;
 
+                    console.log("maxResultVolume = " + maxResultVolume);
                     while(true) {
                         tmpResultVolume = resultVolume;
                         for (var k = 0; k < tmpArr.length; k++) {
@@ -3107,13 +3108,13 @@ function wareSupply(type, subid, choice, good){
                                     resultVolume = resultVolume + n;
                                     tmpArr[k].available = tmpArr[k].available - n;
                                     resultPrice = calcMix(n, tmpArr[k].price, resultVolume, resultPrice);
-                                    // ++cntBeforeLog;
-                                    // if(cntBeforeLog > 1000){
-                                     //    console.log("resultQuality = " + resultQuality);
-                                     //    console.log("resultVolume = " + resultVolume);
-                                     //    console.log("resultPrice = " + resultPrice);
-                                     //    cntBeforeLog = 0;
-									// }
+                                     ++cntBeforeLog;
+                                     if(cntBeforeLog > 1000){
+                                         console.log("resultQuality = " + resultQuality);
+                                         console.log("resultVolume = " + resultVolume);
+                                         console.log("resultPrice = " + resultPrice);
+                                         cntBeforeLog = 0;
+									}
                                     found = true;
                                     break;
                                 }
