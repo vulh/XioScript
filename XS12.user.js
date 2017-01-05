@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.86
+// @version        12.0.87
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.86";
+var version = "12.0.87";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2997,7 +2997,24 @@ function wareSupply(type, subid, choice, good){
 			}
 			
 			else if(choice[1] >= 1){
-				
+
+                var tosetmin = 0;
+                if(choice[2] === 2){
+                    tosetmin = Math.max(tosetmin, 1);
+                }
+                for(var k = 0; k < supplier.length; k++) {
+                    if(supplier[k].available === 0 && mapped[url].parcel[supplier[k].index] > 0){
+                        change.push({
+                            'newsup' : false,
+                            'offer'  : supplier[k].offer,
+                            'amount' : tosetmin,
+                            'priceMarkUp'         : supplier[k].priceMarkUp,
+                            'priceConstraint'     : supplier[k].priceConstraint,
+                            'constraintPriceType' : supplier[k].constraintPriceType,
+                            'qualityMin'          : supplier[k].qualityMin
+                        });
+                    }
+                }
 				var product = mapped[urlMain].product[i];
 				
 				var offers = supplier.map(function(contract){
