@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.87
+// @version        12.0.88
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.87";
+var version = "12.0.88";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -104,7 +104,8 @@ function map(html, url, page){
 	}
 	else if(page === "sale"){ 
 		mapped[url] = {
-			form : $html.find("[name=storageForm]"),
+            form : $html.find("[name=storageForm]"),
+            powerSaleForm : $html.find("form"),
 			policy : $html.find("select:even").map( function(i, e){ return $(e).find("[selected]").index(); }).get(),
 			price : $html.find("input.money:even").map( function(i, e){ return numberfy($(e).val()); }).get(),
             incineratorMaxPrice : $html.find('span[style="COLOR: green;"]').map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -115,7 +116,8 @@ function map(html, url, page){
 			product : $html.find(".grid a:not([onclick])").map( function(i, e){ return $(e).text(); }).get(),
 			productId : $html.find(".grid a:not([onclick])").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+/)[0]); }).get(),
 			region : $html.find(".officePlace a:eq(-2)").text(),
-			contractpage : !!$html.find(".tabsub").length,
+            contractpage : !!$html.find(".tabsub").length,
+            tarif_link : $html.find("a.list_sublink[href*=tariff]").attr('href'),
 			contractprice : ($html.find("script:contains(mm_Msg)").text().match(/(\$(\d|\.| )+)|(\[\'name\'\]		= \"[a-zA-Zа-яА-ЯёЁ ]+\")/g) || []).map( function(e){ return e[0] === "["? e.slice(13, -1) : numberfy(e) })
 		}
 	}
@@ -215,7 +217,8 @@ function map(html, url, page){
         mapped[url] = {
             price : $html.find("a.popup[href$='service_history']").map( function(i, e){ return numberfy($(e).text().split('(')[0].trim()); }).get(),
             history : $html.find("a.popup[href$='service_history']").map( function(i, e){ return $(e).attr("href"); }).get(),
-            incineratorPrice : $html.find("a.popup[href$='power_history']").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            prevPrice : $html.find("a.popup[href$='power_history']").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            newPrice : $html.find("input[name='servicePrice']").map( function(i, e){ return numberfy($(e).val()); }).get(),
 
 			//not used
             stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -250,12 +253,17 @@ function map(html, url, page){
 			price : $html.find(".list td:nth-child(4)").map( function(i, e){ return numberfy($(e).text()); }).get()
 		}
 	}
-	else if(page === "TM"){
-		mapped[url] = {
-			product : $html.find(".grid td:odd").map( function(i, e){ return $(e).clone().children().remove().end().text().trim(); }).get(),
-			franchise : $html.find(".grid b").map( function(i, e){ return $(e).text(); }).get()
-		}
-	}
+    else if(page === "TM"){
+        mapped[url] = {
+            product : $html.find(".grid td:odd").map( function(i, e){ return $(e).clone().children().remove().end().text().trim(); }).get(),
+            franchise : $html.find(".grid b").map( function(i, e){ return $(e).text(); }).get()
+        }
+    }
+    else if(page === "energytariff"){
+        mapped[url] = {
+            price :  $html.find("table > tbody > tr[class] > td:nth-child(3)").map( function(i, e){ return numberfy($(e).text().split('/')[0].trim()); }).get()
+        }
+    }
 	else if(page === "IP"){
 		mapped[url] = {
 			product : $html.find(".list td:nth-child(5n-3)").map( function(i, e){ return $(e).text(); }).get(),
@@ -960,6 +968,59 @@ function salePrice(type, subid, choice){
 	}
 }
 
+function solarEnergyPrice(type, subid, choice){
+
+    var url = "/"+realm+"/main/unit/view/"+subid;
+    var url2 = "/"+realm+"/main/unit/view/"+subid+"/sale";
+    var url3 = "";
+
+    xGet(url, "service", false, function(){
+        xGet(url2, "sale", false, function(){
+            url3 = mapped[url2].tarif_link;
+            xGet(url3, "energytariff", false, function(){
+                post();
+            });
+        });
+    });
+
+    function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        //["-", "Min", "Max"]]
+        var change = false;
+        var data = "setprice=1";
+
+        for(var i = 0; i < mapped[url].prevPrice.length; i++){
+
+            var price = 0;
+            if(choice[0] === 1){
+                //skip first value, its price for city
+                price = Math.min.apply(null, mapped[url3].price.slice(1));
+            }
+            else if(choice[0] === 2){
+                //skip first value, its price for city
+                price = Math.max.apply(null, mapped[url3].price.slice(1));
+            }
+
+            if(mapped[url].newPrice[i] !== price && price > 0){
+                change = true;
+                data += "&" + encodeURI("servicePrice=" + price);
+            }
+
+        }
+
+        if(change){
+            xPost(url, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+
+}
 function incineratorPrice(type, subid, choice){
 
     var url = "/"+realm+"/main/unit/view/"+subid;
@@ -977,7 +1038,7 @@ function incineratorPrice(type, subid, choice){
         var change = false;
         var data = "setprice=1";
 
-        for(var i = 0; i < mapped[url].incineratorPrice.length; i++){
+        for(var i = 0; i < mapped[url].prevPrice.length; i++){
 
             var price = 0;
             if(choice[0] === 1){
@@ -986,7 +1047,7 @@ function incineratorPrice(type, subid, choice){
 
             price = price.toPrecision(4) || 0;
 
-            if(mapped[url].incineratorPrice[i] !== price && price > 0){
+            if(mapped[url].newPrice[i] !== price && price > 0){
                 change = true;
                 data += "&" + encodeURI("servicePrice=" + price);
             }
@@ -1344,6 +1405,51 @@ function retailPrice(type, subid, choice){
 	
 }
 
+function energyPolicy(type, subid, choice){
+    var urlSale = "/"+realm+"/main/unit/view/"+subid+"/sale";
+
+	xGet(urlSale, "sale", false, function(){
+		post();
+	});
+    //["-", "Corp.", "Company", "City", "Region", "World"]
+
+    function post(){
+        $("[id='x"+"Policy"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+        var change = false;
+        var policy = -1;
+
+		if(choice[0] === 1){
+            policy = 3;
+        }
+        else if(choice[0] === 2){
+            policy = 4;
+        }
+        else if(choice[0] === 3){
+            policy = 2;
+        }
+        else if(choice[0] === 4){
+            policy = 1;
+        }
+		else if(choice[0] === 5){
+			policy = 0;
+		}
+        if(mapped[urlSale].powerSaleForm.find('input[type="radio"][value='+ policy +']').length === 1){
+            change = true;
+            mapped[urlSale].powerSaleForm.find('input[type="radio"][value='+ policy +']').attr("checked", true);
+        }
+
+        if(change){
+            xPost(urlSale, mapped[urlSale].powerSaleForm.serialize(), function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+    }
+
+
+}
 function salePolicy(type, subid, choice){
 	var url = "/"+realm+"/main/unit/view/"+subid+"/sale";
 		
@@ -3501,8 +3607,8 @@ var policyJSON = {
         showAdditionSettings: blankFunction
 	},
 	ps: {
-		func: salePolicy, 
-		save: [["-", "No sale", "Any", "Company", "Corp."], ["All", "Output"]], 
+		func: salePolicy,
+		save: [["-", "No sale", "Any", "Company", "Corp."], ["All", "Output"]],
 		order: [["-", "No sale", "Any", "Company", "Corp."], ["All", "Output"]],
 		name: "policy",
 		group: "Policy",
@@ -3542,6 +3648,33 @@ var policyJSON = {
         order: [["-", "Max"]],
         name: "priceService",
         group: "Price",
+        wait: [],
+        showAdditionSettings: blankFunction
+    },
+    se: {
+        func: solarEnergyPrice,
+        save: [["-", "Min", "Max"]],
+        order: [["-", "Min", "Max"]],
+        name: "solarEnergyPrice",
+        group: "Price",
+        wait: [],
+        showAdditionSettings: blankFunction
+    },
+    ss: {
+        func: energyPolicy,
+        save: [["-", "Corp.", "Company"]],
+        order: [["-", "Corp.", "Company"]],
+        name: "energyPolicy",
+        group: "Policy",
+        wait: [],
+        showAdditionSettings: blankFunction
+    },
+    mp: {
+        func: energyPolicy,
+        save: [["-", "Corp.", "Company", "City", "Region", "World"]],
+        order: [["-", "Corp.", "Company", "City", "Region", "World"]],
+        name: "energyPolicy",
+        group: "Policy",
         wait: [],
         showAdditionSettings: blankFunction
     },
@@ -3837,6 +3970,20 @@ function preferencePages(html, url){
 	else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/sale$").test(url) && $html.find(".list_sublink").length === 0){
 		return ["pw", "pn"];
 	}
+
+    //Incinerator
+    else if($('#mainContent > form > fieldset > table > tbody > tr > th').length === 1 && $html.find("form[name='servicePriceForm']") && new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/sale$").test(url) && $html.find("a[href$='/technology']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+        return ["ee"];
+    }
+
+    //Solar power plant
+    else if($('#mainContent > form > fieldset > table > tbody > tr > th').length === 2 && $html.find("form[name='servicePriceForm']") && new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/sale$").test(url) && $html.find("a[href$='/technology']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+        return ["se","ss"];
+    }
+    //Power plant with supply
+    else if($('#mainContent > form > fieldset > table > tbody > tr > th').length === 5 && $html.find("input[name='servicePrice']") && new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/sale$").test(url) && $html.find("a[href$='/technology']").length  && $html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+        return ["mp"];
+    }
 	
 	//Production and Service Supply page
     else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[name=productCategory]").length === 0){
@@ -3905,9 +4052,6 @@ function preferencePages(html, url){
         } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/virtasement']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/sale']").length && !$html.find("a[href$='/units']").length){
             //service without stock
             policyArray.push("sl");
-        } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/sale']").length && $html.find("a[href$='/technology']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
-            //Incinerator
-            policyArray.push("ee");
         }
 		
 		return policyArray;
