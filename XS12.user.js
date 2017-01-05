@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.88
+// @version        12.0.89
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.88";
+var version = "12.0.89";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -118,6 +118,8 @@ function map(html, url, page){
 			region : $html.find(".officePlace a:eq(-2)").text(),
             contractpage : !!$html.find(".tabsub").length,
             tarif_link : $html.find("a.list_sublink[href*=tariff]").attr('href'),
+            newServicePrice : $html.find("input[name='servicePrice']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            policyTable : $html.find("form > fieldset > table"),
 			contractprice : ($html.find("script:contains(mm_Msg)").text().match(/(\$(\d|\.| )+)|(\[\'name\'\]		= \"[a-zA-Zа-яА-ЯёЁ ]+\")/g) || []).map( function(e){ return e[0] === "["? e.slice(13, -1) : numberfy(e) })
 		}
 	}
@@ -966,6 +968,74 @@ function salePrice(type, subid, choice){
 			xTypeDone(type);
 		}
 	}
+}
+
+function energyWithSupplyPrice(type, subid, choice){
+
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
+    var urlSale = "/"+realm+"/main/unit/view/"+subid+"/sale";
+    var urlTariff = "";
+
+    xGet(urlMain, "service", false, function(){
+    	//because policy may change, call with force
+        xGet(urlSale, "sale", true, function(){
+            urlTariff = mapped[urlSale].tarif_link;
+            xGet(urlTariff, "energytariff", false, function(){
+                post();
+            });
+        });
+    });
+
+    function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        //["-", "Min", "Max"]]
+        var change = false;
+        var data = "setprice=1";
+
+
+        var price = 0;
+        //world
+        if(mapped[urlSale].powerSaleForm.find('input[type="radio"][value=0]').length === 0){
+            price = numberfy(mapped[urlSale].policyTable.find('> tbody > tr:nth-child(1) > td:nth-child(3) > span:nth-child(1) > b').text());
+        }
+        //region
+        else if(mapped[urlSale].powerSaleForm.find('input[type="radio"][value=1]').length === 0){
+            price = numberfy(mapped[urlSale].policyTable.find('> tbody > tr:nth-child(2) > td:nth-child(3) > span:nth-child(1) > b').text());
+        }
+        //city
+        else if(mapped[urlSale].powerSaleForm.find('input[type="radio"][value=2]').length === 0){
+            price = numberfy(mapped[urlSale].policyTable.find('> tbody > tr:nth-child(3) > td:nth-child(3) > span:nth-child(1) > b').text());
+        }
+        //corp
+        //company
+        else if(mapped[urlSale].powerSaleForm.find('input[type="radio"][value=3]').length === 0 || mapped[urlSale].powerSaleForm.find('input[type="radio"][value=4]').length === 0){
+            if(choice[0] === 1){
+                //skip first value, its price for city
+                price = Math.min.apply(null, mapped[urlTariff].price.slice(1));
+            }
+            else if(choice[0] === 2){
+                //skip first value, its price for city
+                price = Math.max.apply(null, mapped[urlTariff].price.slice(1));
+            }
+        }
+
+		if(mapped[urlSale].newServicePrice[0] !== price && price > 0){
+			change = true;
+			data += "&" + encodeURI("servicePrice=" + price);
+		}
+
+
+        if(change){
+            xPost(urlSale, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
 }
 
 function solarEnergyPrice(type, subid, choice){
@@ -3655,7 +3725,16 @@ var policyJSON = {
         func: solarEnergyPrice,
         save: [["-", "Min", "Max"]],
         order: [["-", "Min", "Max"]],
-        name: "solarEnergyPrice",
+        name: "energyPrice",
+        group: "Price",
+        wait: [],
+        showAdditionSettings: blankFunction
+    },
+    ew: {
+        func: energyWithSupplyPrice,
+        save: [["-", "Min", "Max"]],
+        order: [["-", "Min", "Max"]],
+        name: "energyPrice",
         group: "Price",
         wait: [],
         showAdditionSettings: blankFunction
@@ -3982,7 +4061,7 @@ function preferencePages(html, url){
     }
     //Power plant with supply
     else if($('#mainContent > form > fieldset > table > tbody > tr > th').length === 5 && $html.find("input[name='servicePrice']") && new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/sale$").test(url) && $html.find("a[href$='/technology']").length  && $html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
-        return ["mp"];
+        return ["mp","ew"];
     }
 	
 	//Production and Service Supply page
