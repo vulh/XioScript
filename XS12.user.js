@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.89
+// @version        12.0.90
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.89";
+var version = "12.0.90";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -217,6 +217,9 @@ function map(html, url, page){
     }
     else if(page === "mobilesupply"){
         mapped[url] = {
+            available : $html.find("tr[id^=at_storage_] > td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
+            parcel : $html.find("input.quickchange").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            offer : $html.find(".destroy").map( function(i, e){ return numberfy($(e).val()); }).get(),
             purch: parseFloat($html.find('table.list > tbody > tr > td:nth-child(3) > table > tbody > tr:nth-child(2) > td:nth-child(3)').text().replace(/\s+/,'').replace('$',''))
         }
     }
@@ -226,9 +229,10 @@ function map(html, url, page){
             history : $html.find("a.popup[href$='service_history']").map( function(i, e){ return $(e).attr("href"); }).get(),
             prevPrice : $html.find("a.popup[href$='power_history']").map( function(i, e){ return numberfy($(e).text()); }).get(),
             newPrice : $html.find("input[name='servicePrice']").map( function(i, e){ return numberfy($(e).val()); }).get(),
-			prevMobilePrice: $html.find('#mainContent > table > tbody > tr:nth-child(18) > td:nth-child(1) > div > div.ccontent.ccompany > table > tbody > tr:nth-child(4) > td:nth-child(2)').map( function(i, e){ return numberfy($(e).text().split("(")[0]); }).get(),
+            prevMobilePrice: $html.find('#mainContent > table > tbody > tr:nth-child(18) > td:nth-child(1) > div > div.ccontent.ccompany > table > tbody > tr:nth-child(4) > td:nth-child(2)').map( function(i, e){ return numberfy($(e).text().split("(")[0]); }).get(),
+            prevMobileSold: $html.find('#mainContent > table > tbody > tr:nth-child(18) > td:nth-child(1) > div > div.ccontent.ccompany > table > tbody > tr:nth-child(2) > td:nth-child(2)').map( function(i, e){ return numberfy($(e).text().split("(")[1]); }).get(),
 
-			//not used
+            //not used
             stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
             deliver : $html.find(".nowrap:nth-child(5)").map( function(i, e){ return numberfy($(e).text().split("[")[1]); }).get(),
             report : $html.find(".grid a:has(img):not(:has(img[alt]))").map( function(i, e){ return $(e).attr("href"); }).get(),
@@ -1646,6 +1650,87 @@ function salePolicy(type, subid, choice){
 	}
 	
 	
+}
+
+function mobileNetworkOperatorSupply(type, subid, choice){
+    var urlSupply = "/"+realm+"/main/unit/view/"+subid+"/supply";
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
+    var urlContract = "/"+realm+"/ajax/unit/supply/create";
+
+
+    xGet(urlSupply, "mobilesupply", false, function(){
+        xGet(urlMain, "service", false, function(){
+            post();
+        });
+    });
+
+    function post(){
+        $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+		//["-", "Zero", "Required +3%", "Remove"]
+        if(choice[0] === 3){
+            var data = 'destroy=1';
+
+            for (var i = 0; i < mapped[urlSupply].offer.length; i++) {
+                data += "&" + encodeURI("multipleDestroy[]=" + mapped[urlSupply].offer[i]);
+            }
+            if(mapped[urlSupply].offer.length > 0){
+                xPost(urlSupply, data, function(){
+                    xTypeDone(type);
+                });
+            }
+            else {
+                xTypeDone(type);
+            }
+        } else {
+            var change = [];
+
+            if (mapped[urlSupply].parcel.length !== 1) {
+                choice[0] = 0;
+                postMessage("Subdivision <a href=" + urlSupply + ">" + subid + "</a> is missing a supplier, or has too many suppliers!");
+            }
+
+            //["-", "Zero", "Required +3%", "Remove"]
+            for (var i = 0; i < mapped[urlSupply].parcel.length; i++) {
+                var newsupply = 0;
+                if (choice[0] === 2) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.03);
+                }
+
+                if (newsupply > 0 && mapped[urlSupply].available[i] < newsupply) {
+                    postMessage("Subdivision mobile network operator <a href=" + urlSupply + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                    break;
+                }
+            }
+
+            for (var i = 0; i < mapped[urlSupply].parcel.length; i++) {
+                var newsupply = 0;
+                if (choice[0] === 2) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.03);
+                }
+
+                if (mapped[urlSupply].parcel[i] !== newsupply) {
+                    change.push({
+                        amount: newsupply,
+                        offer: mapped[urlSupply].offer[i],
+                        unit: subid
+                    });
+                }
+            }
+
+            var postcount = change.length;
+            if (postcount) {
+                for (var i = 0; i < change.length; i++) {
+                    xContract(urlContract, change[i], function () {
+                        !--postcount && xTypeDone(type);
+                    });
+                }
+            }
+            else {
+                xTypeDone(type);
+            }
+        }
+    }
+
 }
 
 function prodSupply(type, subid, choice){
@@ -3785,6 +3870,15 @@ var policyJSON = {
         wait: [],
         showAdditionSettings: blankFunction
     },
+    sm: {
+        func: mobileNetworkOperatorSupply,
+        save: [["-", "Zero", "Required +3%", "Remove"]],
+        order: [["-", "Zero", "Required +3%", "Remove"]],
+        name: "supplyMobile",
+        group: "Supply",
+        wait: ["priceMobile"],
+        showAdditionSettings: blankFunction
+    },
     sl: {
         func: serviceWithoutStockPrice,
         save: [["-", "Sales", "Turnover"]],
@@ -4147,26 +4241,31 @@ function preferencePages(html, url){
     }
 	
 	//Production and Service Supply page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[name=productCategory]").length === 0){
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[name=productCategory]").length === 0 && ($html.find("[href$=consume]").length && $html.find("[href$=manufacture]").length)){
 		return ["sp"];
 	}
 	
 	//Store Supply page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0){
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[href$=tradehall]").length){
 		return ["sr"];
 	}
-	
-	//Store Trading Hall
+
+    //Warehouse Supply page
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find("[href$=sale]").length){
+        return ["sh"];
+    }
+
+    //Mobile network operator page
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && !$html.find("[href$=sale]").length && !$html.find("[href$=tradehall]").length && !$html.find("[href$=consume]").length && !$html.find("[href$=manufacture]").length){
+        return ["sm"];
+    }
+
+    //Store Trading Hall
     else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/trading_hall$").test(url)){
-		return ["pt"];
-	}	
-	
-	//Warehouse Supply page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url)){
-		return ["sh"];
-	}
-		
-	//Main unit page excluding warehouses
+        return ["pt"];
+    }
+
+    //Main unit page excluding warehouses
     else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+$").test(url) && !$("[name=unit_cancel_build]").length && !$html.find("[href$=delivery]").length){
 		
 		var policyArray = [];
