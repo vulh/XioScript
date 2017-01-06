@@ -221,6 +221,7 @@ function map(html, url, page){
             history : $html.find("a.popup[href$='service_history']").map( function(i, e){ return $(e).attr("href"); }).get(),
             prevPrice : $html.find("a.popup[href$='power_history']").map( function(i, e){ return numberfy($(e).text()); }).get(),
             newPrice : $html.find("input[name='servicePrice']").map( function(i, e){ return numberfy($(e).val()); }).get(),
+			prevMobilePrice: $html.find('#mainContent > table > tbody > tr:nth-child(18) > td:nth-child(1) > div > div.ccontent.ccompany > table > tbody > tr:nth-child(4) > td:nth-child(2)').map( function(i, e){ return numberfy($(e).text().split("(")[0]); }).get(),
 
 			//not used
             stock : $html.find(".nowrap:nth-child(6)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -444,7 +445,9 @@ function map(html, url, page){
 	}
 	else if(page === "financeitem"){
 		mapped[url] = {
-			energy : numberfy($html.find(".list tr:has(span[style]) td:eq(1)").text())
+            energy : numberfy($html.find(".list tr:has(span[style]) td:eq(1)").text()),
+            income : numberfy($html.find("table.list > tbody > tr:nth-child(3) > td:nth-child(2)").text()),
+            prevIncome : numberfy($html.find("table.list > tbody > tr:nth-child(3) > td:nth-child(3)").text())
 		}
 	}
 	else if(page === "size"){
@@ -1219,6 +1222,68 @@ function serviceWithoutStockPrice(type, subid, choice){
     }
 
 }
+
+
+function mobileNetworkOperatorPrice(type, subid, choice){
+
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
+    var urlFinance = "/"+realm+"/main/unit/view/"+subid+"/finans_report/by_item";
+
+    xGet(urlMain, "service", false, function(){
+        xGet(urlFinance, "financeitem", false, function(){
+            post();
+        });
+    });
+
+    function post(){
+        $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        var change = false;
+        var data = "setprice=1";
+
+		var price = 0;
+		var priceOld = mapped[urlMain].prevMobilePrice[0];
+
+		//["-", "Turnover"]
+		if(choice[0] === 1){
+			var income = mapped[urlFinance].income;
+			var prevIncome = mapped[urlFinance].prevIncome;
+
+			if(!income){
+				price = 0;
+			}
+			else if(!prevIncome){
+				price = priceOld * 1.03;
+			}
+			else{
+				price = priceOld * (0.97 + 0.06 * (income >= prevIncome) );
+			}
+		}
+
+		price = price.toPrecision(4) || 0;
+
+		//var multiplier = [0, 1, 1.1, 1.4, 2];
+		//var prime = Math.round(mapped[urlFinance].purch[0] * multiplier[choice[1]]);
+		//price = Math.max(price, prime);
+
+		if(mapped[urlMain].newPrice[0] !== price && price > 0){
+			change = true;
+			data += "&" + encodeURI("servicePrice=" + price);
+		}
+
+
+        if(change){
+            xPost(urlMain, data, function(){
+                xTypeDone(type);
+            });
+        }
+        else{
+            xTypeDone(type);
+        }
+
+    }
+}
+
 function servicePrice(type, subid, choice){
 
     var url = "/"+realm+"/main/unit/view/"+subid;
@@ -3703,6 +3768,15 @@ var policyJSON = {
         wait: [],
         showAdditionSettings: blankFunction
     },
+    mn: {
+        func: mobileNetworkOperatorPrice,
+        save: [["-", "Turnover"]],
+        order: [["-", "Turnover"]],
+        name: "priceMobile",
+        group: "Price",
+        wait: [],
+        showAdditionSettings: blankFunction
+    },
     sl: {
         func: serviceWithoutStockPrice,
         save: [["-", "Sales", "Turnover"]],
@@ -4131,6 +4205,10 @@ function preferencePages(html, url){
         } else if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/virtasement']").length  && !$html.find("a[href$='/supply']").length && !$html.find("a[href$='/sale']").length && !$html.find("a[href$='/units']").length){
             //service without stock
             policyArray.push("sl");
+        }
+        //Mobile network operator
+        if($html.find("input[name='servicePrice']") && !$html.find("a[href$='/sale$']").length && !$html.find("a[href$='/technology']").length && $html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+            policyArray.push("mn");
         }
 		
 		return policyArray;
