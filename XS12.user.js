@@ -215,6 +215,11 @@ function map(html, url, page){
             history : $html.find("a.popup").map( function(i, e){ return $(e).attr("href"); }).get()
         }
     }
+    else if(page === "mobilesupply"){
+        mapped[url] = {
+            purch: parseFloat($html.find('table.list > tbody > tr > td:nth-child(3) > table > tbody > tr:nth-child(2) > td:nth-child(3)').text().replace(/\s+/,'').replace('$',''))
+        }
+    }
     else if(page === "service"){
         mapped[url] = {
             price : $html.find("a.popup[href$='service_history']").map( function(i, e){ return numberfy($(e).text().split('(')[0].trim()); }).get(),
@@ -1228,10 +1233,13 @@ function mobileNetworkOperatorPrice(type, subid, choice){
 
     var urlMain = "/"+realm+"/main/unit/view/"+subid;
     var urlFinance = "/"+realm+"/main/unit/view/"+subid+"/finans_report/by_item";
+    var urlSupply = "/"+realm+"/main/unit/view/"+subid+"/supply";
 
     xGet(urlMain, "service", false, function(){
         xGet(urlFinance, "financeitem", false, function(){
-            post();
+            xGet(urlSupply, "mobilesupply", false, function(){
+            	post();
+            });
         });
     });
 
@@ -1262,9 +1270,9 @@ function mobileNetworkOperatorPrice(type, subid, choice){
 
 		price = price.toPrecision(4) || 0;
 
-		//var multiplier = [0, 1, 1.1, 1.4, 2];
-		//var prime = Math.round(mapped[urlFinance].purch[0] * multiplier[choice[1]]);
-		//price = Math.max(price, prime);
+		var multiplier = [0, 1, 1.1, 1.4, 2];
+		var prime = Math.round(mapped[urlSupply].purch * multiplier[choice[1]]);
+		price = Math.max(price, prime);
 
 		if(mapped[urlMain].newPrice[0] !== price && price > 0){
 			change = true;
@@ -3770,8 +3778,8 @@ var policyJSON = {
     },
     mn: {
         func: mobileNetworkOperatorPrice,
-        save: [["-", "Turnover"]],
-        order: [["-", "Turnover"]],
+        save: [["-", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        order: [["-", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
         name: "priceMobile",
         group: "Price",
         wait: [],
