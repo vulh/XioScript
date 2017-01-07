@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.91
+// @version        12.0.92
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.91";
+var version = "12.0.92";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4246,7 +4246,7 @@ function preferencePages(html, url){
 	}
 	
 	//Store Supply page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[href$=tradehall]").length){
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[href$=trading_hall]").length){
 		return ["sr"];
 	}
 
@@ -4256,7 +4256,7 @@ function preferencePages(html, url){
     }
 
     //Mobile network operator page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && !$html.find("[href$=sale]").length && !$html.find("[href$=tradehall]").length && !$html.find("[href$=consume]").length && !$html.find("[href$=manufacture]").length){
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && !$html.find("[href$=sale]").length && !$html.find("[href$=trading_hall]").length && !$html.find("[href$=consume]").length && !$html.find("[href$=manufacture]").length){
         return ["sm"];
     }
 
