@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.92
+// @version        12.0.93
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.92";
+var version = "12.0.93";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4314,7 +4314,7 @@ function preferencePages(html, url){
             policyArray.push("sl");
         }
         //Mobile network operator
-        if($html.find("input[name='servicePrice']") && !$html.find("a[href$='/sale$']").length && !$html.find("a[href$='/technology']").length && $html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
+        if($html.find("input[name='servicePrice']") && !$html.find("[href$=trading_hall]").length && !$html.find("a[href$='/sale$']").length && !$html.find("a[href$='/technology']").length && $html.find("a[href$='/supply']").length && !$html.find("a[href$='/units']").length){
             policyArray.push("mn");
         }
 		
