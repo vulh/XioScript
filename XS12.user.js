@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.90
+// @version        12.0.91
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.90";
+var version = "12.0.91";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4241,7 +4241,7 @@ function preferencePages(html, url){
     }
 	
 	//Production and Service Supply page
-    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[name=productCategory]").length === 0 && ($html.find("[href$=consume]").length && $html.find("[href$=manufacture]").length)){
+    else if(new RegExp("\/.*\/main\/unit\/view\/[0-9]+\/supply$").test(url) && $html.find(".add_contract").length === 0 && $html.find("[name=productCategory]").length === 0 && ($html.find("[href$=consume]").length || $html.find("[href$=manufacture]").length)){
 		return ["sp"];
 	}
 	
