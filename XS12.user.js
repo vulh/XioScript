@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.94
+// @version        12.0.95
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.94";
+var version = "12.0.95";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1236,16 +1236,24 @@ function serviceWithoutStockPrice(type, subid, choice){
 function mobileNetworkOperatorPrice(type, subid, choice){
 
     var urlMain = "/"+realm+"/main/unit/view/"+subid;
-    var urlFinance = "/"+realm+"/main/unit/view/"+subid+"/finans_report/by_item";
     var urlSupply = "/"+realm+"/main/unit/view/"+subid+"/supply";
 
+
     xGet(urlMain, "service", false, function(){
-        xGet(urlFinance, "financeitem", false, function(){
-            xGet(urlSupply, "mobilesupply", false, function(){
-            	post();
-            });
-        });
+        phase();
     });
+
+    function phase(){
+        var getcount = 2;
+
+        xGet(mapped[urlMain].history[0], "servicepricehistory", false, function(){
+            !--getcount && post();
+        });
+        xGet(urlSupply, "mobilesupply", false, function(){
+            !--getcount && post();
+        });
+
+    }
 
     function post(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
@@ -1256,21 +1264,55 @@ function mobileNetworkOperatorPrice(type, subid, choice){
 		var price = 0;
 		var priceOld = mapped[urlMain].prevMobilePrice[0];
 
-		//["-", "Turnover"]
+		//["-", "Turnover", "Sales", "Profit"]
 		if(choice[0] === 1){
-			var income = mapped[urlFinance].income;
-			var prevIncome = mapped[urlFinance].prevIncome;
+            var priceOld = mapped[mapped[urlMain].history[0]].price[0];
+            var priceOlder = mapped[mapped[urlMain].history[0]].price[1];
+            var turnOld = mapped[mapped[urlMain].history[0]].quantity[0] * priceOld;
+            var turnOlder = mapped[mapped[urlMain].history[0]].quantity[1] * priceOlder;
 
-			if(!income){
-				price = 0;
-			}
-			else if(!prevIncome){
-				price = priceOld * 1.03;
-			}
-			else{
-				price = priceOld * (0.97 + 0.06 * (income >= prevIncome) );
-			}
-		}
+            if(!priceOld){
+                price = 0;
+            }
+            else if(!priceOlder){
+                price = priceOld * 1.03;
+            }
+            else{
+                price = priceOld * (0.97 + 0.06 * ((turnOld > turnOlder) === (priceOld > priceOlder)) );
+            }
+		} else if(choice[0] === 2){
+            var priceOld = mapped[mapped[urlMain].history[0]].price[0];
+            var priceOlder = mapped[mapped[urlMain].history[0]].price[1];
+            var saleOld = mapped[mapped[urlMain].history[0]].quantity[0];
+            var saleOlder = mapped[mapped[urlMain].history[0]].quantity[1];
+
+            if(!priceOld){
+                price = 0;
+            }
+            else if(!priceOlder){
+                price = priceOld * 1.03;
+            }
+            else{
+                price = priceOld * (0.97 + 0.06 * ((saleOld > saleOlder) === (priceOld > priceOlder)) );
+            }
+        } else if(choice[0] === 3){
+            var priceOld = mapped[mapped[urlMain].history[0]].price[0];
+            var priceOlder = mapped[mapped[urlMain].history[0]].price[1];
+            var saleOld = mapped[mapped[urlMain].history[0]].quantity[0];
+            var saleOlder = mapped[mapped[urlMain].history[0]].quantity[1];
+            var profitOld = (priceOld - mapped[urlSupply].purch) * saleOld;
+            var profitOlder = (priceOlder - mapped[urlSupply].purch) * saleOlder;
+
+            if(!priceOld){
+                price = 0;
+            }
+            else if(!priceOlder){
+                price = priceOld * 1.03;
+            }
+            else{
+                price = priceOld * (0.97 + 0.06 * ((profitOld > profitOlder) === (priceOld > priceOlder)) );
+            }
+        }
 
 		price = price.toPrecision(4) || 0;
 
@@ -3863,8 +3905,8 @@ var policyJSON = {
     },
     mn: {
         func: mobileNetworkOperatorPrice,
-        save: [["-", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
-        order: [["-", "Turnover"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        save: [["-", "Turnover", "Sales", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        order: [["-", "Turnover", "Sales", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
         name: "priceMobile",
         group: "Price",
         wait: [],
