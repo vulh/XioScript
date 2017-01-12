@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.95
+// @version        12.0.96
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.95";
+var version = "12.0.96";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -107,7 +107,7 @@ function map(html, url, page){
             form : $html.find("[name=storageForm]"),
             powerSaleForm : $html.find("form"),
 			policy : $html.find("select:even").map( function(i, e){ return $(e).find("[selected]").index(); }).get(),
-			price : $html.find("input.money:even").map( function(i, e){ return numberfy($(e).val()); }).get(),
+            price : $html.find("input.money:even").map( function(i, e){ return numberfy($(e).val()); }).get(),
             incineratorMaxPrice : $html.find('span[style="COLOR: green;"]').map( function(i, e){ return numberfy($(e).text()); }).get(),
 			outqual : $html.find("td:has('table'):nth-last-child(6)  tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			outprime : $html.find("td:has('table'):nth-last-child(6)  tr:nth-child(3) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
@@ -848,7 +848,7 @@ function salePrice(type, subid, choice){
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 				price = primecost+0.01 < 30 * IP? primecost + 0.01 : primecost;
 				price = Math.round(price*100)/100;		
 			}
@@ -856,7 +856,7 @@ function salePrice(type, subid, choice){
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 				
 				var indexCTIE = mapped[urlCTIE].product.indexOf(product);
 				var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
@@ -872,33 +872,33 @@ function salePrice(type, subid, choice){
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 				
 				var indexCTIE = mapped[urlCTIE].product.indexOf(product);
 				var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
 				var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
 				price = Math.round(priceCTIE*100)/100;
-				price = price < 30 * IP? price: primecost;
+				price = price < 30 * IP ? price : primecost;
 			}
 			else if(choice[0] === 6){			
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 				price = IP;
 			}
 			else if(choice[0] === 7){
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 				price = 30*IP;
 			}
 			else if(choice[0] === 8){								
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
 				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP];
+				var IP = mapped[urlIP].IP[indexIP] * quality;
 								
 				var favPQR = Infinity;
 				for(var j = 0; j < mapped[urlReport[i]].price.length; j++){
