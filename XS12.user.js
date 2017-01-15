@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.96
+// @version        12.0.97
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.96";
+var version = "12.0.97";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3083,20 +3083,49 @@ function research(type, subid, choice){
 
 				return value;
 			}
-			
+			var hypId = mapped[url].hypId;
+			if(mapped[url].curIndex >= 0){
+				//add selected hypothesis id as -1
+                hypId.splice(mapped[url].curIndex, 0, -1);
+			}
+			//["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
 			var favid = -1;
 			var favindex = -1;
-			var lowtime = Infinity;
-			for(var i = 0; i < mapped[url].chance.length; i++){
-				var studytime = calcStudyTime(mapped[url].chance[i]/100, mapped[url].time[i]);
-				if(studytime < lowtime){
-					lowtime = studytime;
-					favid = mapped[url].hypId[i];
-					favindex = i;
-				}
-				
-			}
-			
+            var lowtime = Infinity;
+            if(choice[1] === 1 || choice[1] === 2 || choice[1] === 3) {
+            	var fastestCount = choice[1];
+                for (var i = 0; i < mapped[url].chance.length; i++) {
+                    if (fastestCount > 0 || lowtime === mapped[url].time[i]) {
+                        if(lowtime !== mapped[url].time[i]){
+                            lowtime = mapped[url].time[i];
+                            --fastestCount;
+                        }
+                        favid = hypId[i];
+                        favindex = i;
+                    } else {
+                    	break;
+					}
+                }
+            } else if(choice[1] === 4) {
+            	var prevChance = 0;
+                for (var i = 0; i < mapped[url].chance.length; i++) {
+                    if (prevChance < mapped[url].chance[i]) {
+                        favid = hypId[i];
+                        favindex = i;
+                    }
+                    prevChance = mapped[url].chance[i];
+                }
+			} else {
+                for (var i = 0; i < mapped[url].chance.length; i++) {
+                    var studytime = calcStudyTime(mapped[url].chance[i] / 100, mapped[url].time[i]);
+                    if (studytime < lowtime) {
+                        lowtime = studytime;
+                        favid = hypId[i];
+                        favindex = i;
+                    }
+                }
+            }
+
 			if(mapped[url].curIndex !== favindex){
 				var data = "selectedHypotesis="+favid+"&selectIt=Select+a+hypothesis";
 				xPost(url, data, function(){
@@ -4091,8 +4120,8 @@ var policyJSON = {
 	},
 	rs: {
 		func: research,
-		save: [["-", "Continue"]],
-		order: [["-", "Continue"]],
+		save: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]],
+		order: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]],
 		name: "research",
 		group: "Research",
 		wait: [],
