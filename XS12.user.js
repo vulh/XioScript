@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.97
+// @version        12.0.98
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.97";
+var version = "12.0.98";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -771,7 +771,7 @@ function salePrice(type, subid, choice){
 		});
 	}
 	
-	if(choice[0] === 4 || choice[0] === 5){
+	if(choice[0] === 4 || choice[0] === 5 || choice[0] === 9 || choice[0] === 10 || choice[0] === 11){
 		getcount++;
 		xGet(urlTrans, "transport", false, function(){
 			!--getcount && phase();
@@ -780,14 +780,14 @@ function salePrice(type, subid, choice){
 	
 	function phase(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-
+		//["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"]
 		if(choice[0] === 4){
 			getcount++;
 			xGet(urlCTIE, "CTIE", false, function(){
 				!--getcount && post();
 			});
 		}
-		else if(choice[0] === 5){
+		else if(choice[0] === 5 || choice[0] === 9 || choice[0] === 10 || choice[0] === 11) {
 			getcount++;				
 			var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
 			var regionId = mapped[urlTrans].regionId[ indexRegion ];	
@@ -841,6 +841,7 @@ function salePrice(type, subid, choice){
 			var quality = choice[1] ? mapped[url].outqual[i] : mapped[url].stockqual[i];
 			var price = 0;
 
+            //["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"]
 			if(choice[0] === 2){
 				price = 0.01;
 			}
@@ -864,22 +865,70 @@ function salePrice(type, subid, choice){
 				price = Math.round(priceCTIE*100)/100;
 				price = price < 30 * IP? price: primecost;
 			}
-			else if(choice[0] === 5){
-				var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
-				var regionId = mapped[urlTrans].regionId[indexRegion];
-				urlCTIE = "/"+realm+"/main/geo/regionENVD/"+regionId;
-				
-				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
-				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP] * quality;
-				
-				var indexCTIE = mapped[urlCTIE].product.indexOf(product);
-				var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
-				var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
-				price = Math.round(priceCTIE*100)/100;
-				price = price < 30 * IP ? price : primecost;
-			}
+            else if(choice[0] === 5){
+                var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
+                var regionId = mapped[urlTrans].regionId[indexRegion];
+                urlCTIE = "/"+realm+"/main/geo/regionENVD/"+regionId;
+
+                var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
+                var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
+                var indexIP = mapped[urlIP].product.indexOf(product);
+                var IP = mapped[urlIP].IP[indexIP] * quality;
+
+                var indexCTIE = mapped[urlCTIE].product.indexOf(product);
+                var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
+                var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
+                price = Math.round(priceCTIE*100)/100;
+                price = price < 30 * IP ? price : primecost;
+            }
+            else if(choice[0] === 9){
+                var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
+                var regionId = mapped[urlTrans].regionId[indexRegion];
+                urlCTIE = "/"+realm+"/main/geo/regionENVD/"+regionId;
+
+                var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
+                var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
+                var indexIP = mapped[urlIP].product.indexOf(product);
+                var IP = mapped[urlIP].IP[indexIP] * quality;
+
+                var indexCTIE = mapped[urlCTIE].product.indexOf(product);
+                var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
+                var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
+                price = Math.round(priceCTIE * 1.01 * 100)/100;
+                price = price < 30 * IP ? price : primecost;
+            }
+            else if(choice[0] === 10){
+                var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
+                var regionId = mapped[urlTrans].regionId[indexRegion];
+                urlCTIE = "/"+realm+"/main/geo/regionENVD/"+regionId;
+
+                var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
+                var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
+                var indexIP = mapped[urlIP].product.indexOf(product);
+                var IP = mapped[urlIP].IP[indexIP] * quality;
+
+                var indexCTIE = mapped[urlCTIE].product.indexOf(product);
+                var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
+                var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
+                price = Math.round(priceCTIE * 1.05 * 100)/100;
+                price = price < 30 * IP ? price : primecost;
+            }
+            else if(choice[0] === 11){
+                var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
+                var regionId = mapped[urlTrans].regionId[indexRegion];
+                urlCTIE = "/"+realm+"/main/geo/regionENVD/"+regionId;
+
+                var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
+                var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
+                var indexIP = mapped[urlIP].product.indexOf(product);
+                var IP = mapped[urlIP].IP[indexIP] * quality;
+
+                var indexCTIE = mapped[urlCTIE].product.indexOf(product);
+                var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
+                var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
+                price = Math.round(priceCTIE * 1.1 * 100)/100;
+                price = price < 30 * IP ? price : primecost;
+            }
 			else if(choice[0] === 6){			
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
@@ -3889,8 +3938,8 @@ var blankFunction = function(){
 var policyJSON = {
     pp: {
 		func: salePrice, 
-		save: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock", "Output"], ["Keep", "Reject"]], 
-		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock", "Output"], ["Keep", "Reject"]],
+		save: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"], ["Stock", "Output"], ["Keep", "Reject"]],
+		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"], ["Stock", "Output"], ["Keep", "Reject"]],
 		name: "priceProd",
 		group: "Price",
 		wait: [],
@@ -3898,8 +3947,8 @@ var policyJSON = {
 	},
 	pw: {
 		func: salePrice, 
-		save: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock"], ["Keep", "Reject"]], 
-		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR"], ["Stock"], ["Keep", "Reject"]],
+		save: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"], ["Stock"], ["Keep", "Reject"]],
+		order: [["-", "Zero", "$0.01", "Prime Cost", "CTIE", "Profit Tax", "1x IP", "30x IP", "PQR", "Profit Tax +1%", "Profit Tax +5%", "Profit Tax +10%"], ["Stock"], ["Keep", "Reject"]],
 		name: "priceProd",
 		group: "Price",
 		wait: [],
