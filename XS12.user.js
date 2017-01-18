@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.98
+// @version        12.0.99
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.98";
+var version = "12.0.99";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3282,7 +3282,7 @@ function wareSupply(type, subid, choice, good){
 		var id = mapped[url].id.concat(mapped[url].idAdd);
 		var type = mapped[url].type.concat(mapped[url].typeAdd);
 		
-		if(choice[1] >= 1 && mapped[url].type.length){
+		if(choice[1] >= 1 && type.length){
 			
 			for(var i = 0; i < mapped[urlMain].product.length; i++){
 							
