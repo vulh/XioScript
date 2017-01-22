@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.99
+// @version        12.0.100
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.99";
+var version = "12.0.100";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -432,9 +432,11 @@ function map(html, url, page){
 			time : $html.find(".grid td.nowrap:nth-child(4)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			isAbsent : !!$html.find("b[style='color: red']").length,
 			isFactory : !!$html.find("span[style='COLOR: red']").length,
-			unittype : $html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split(",")[1]),
+			unittype : ($html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split(",")[1])) || ($html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').length && $html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').attr('href').match(/\/(\d+)/)[1]),
 			industry : $html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split("(")[1]),
-			level : numberfy($html.find(".list tr td[style]:eq(0)").text())
+			levelInResearch : numberfy($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2) > span').text()),
+            lastResearchCaption : $html.find('table.list > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(1) > span').text(),
+            resumeBtns : $html.find('div > input[onclick*="project_recreate"]')
 		}
 	}
 	else if(page === "experimentalunit"){
@@ -3081,169 +3083,231 @@ function research(type, subid, choice){
 	var urlForecast = "/"+realm+"/ajax/unit/forecast";
 	var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
 
-	xGet(url, "research", false, function(){
-        $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-		
-		if(choice[0] === 1 && mapped[url].isFree){			
-			xGet(urlManager, "manager", false, function(){
+    xGet(url, "research", false, function () {
+        prephase();
+    });
+
+    function prephase() {
+        if (choice[0] === 1 && mapped[url].isFree) {
+            phase();
+        } else {
+            xPost(urlProject, "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype, function (data) {
+                var bvAlreadyResearched = true;
+                //console.log("industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype);
+                //console.log('(\'select[name="level"] > option\').length = ' + $(data).find('select[name="level"] > option').length);
+                if ($(data).find('select[name="level"] > option').length > 0) {
+                    $(data).find('select[name="level"] > option').each(function () {
+                        var opt = $(this);
+                        //console.log('value = ' + parseFloat(opt.attr('value')));
+                        if (mapped[url].levelInResearch === parseFloat(opt.attr('value'))) {
+                            bvAlreadyResearched = false;
+                        }
+                    });
+                } else {
+                    var opt = $(data).find('input[name="level"]');
+                    if (mapped[url].levelInResearch === parseFloat(opt.attr('value'))) {
+                        bvAlreadyResearched = false;
+                    }
+                }
+                //console.log('bvAlreadyResearched = ' + bvAlreadyResearched);
+                if (bvAlreadyResearched) {
+                    xGet("/" + realm + "/main/unit/view/" + subid + "/project_current_stop", "none", true, function () {
+                        xGet(url, "research", true, function () {
+                            phase();
+                        });
+                    });
+                } else {
+                    phase();
+                }
+            });
+        }
+    }
+
+    function phase() {
+		$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+
+		if (choice[0] === 1 && mapped[url].isFree) {
+			xGet(urlManager, "manager", false, function () {
 				var managerIndex = mapped[urlManager].pic.indexOf("/img/qualification/research.png");
 				var manager = mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex];
-				if(mapped[url].level+1 < calcTechLevel(manager)){
-					xPost(urlProject, "industry="+mapped[url].industry+"&unit_type="+mapped[url].unittype, function(data){
-                        $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+				xPost(urlProject, "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype, function (data) {
+					$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+					var nextLevel = 100;
+					if ($(data).find('select[name="level"] > option').length > 0) {
+                        var opt = $(data).find('select[name="level"]');
+                        nextLevel = parseFloat(opt.val());
+					} else {
+						var opt = $(data).find('input[name="level"]');
+                        nextLevel = parseFloat(opt.attr('value'));
+					}
+					if (nextLevel < calcTechLevel(manager)) {
 						var isContinue = !!$(data).find(":submit").length;
-						if(isContinue){
-							var data = "industry="+mapped[url].industry+"&unit_type="+mapped[url].unittype+"&level="+(mapped[url].level+1)+"&create=Invent";
-							xPost("/"+realm+"/window/unit/view/"+subid+"/project_create", data, function(){
-                                $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-								xTypeDone(type);
-							});
+						if (isContinue) {
+                            var resumeBtn = [];
+                            mapped[url].resumeBtns.each(function () {
+                            	var row = $(this).parent().parent().parent();
+                            	if($(' > td:nth-child(2) > div:nth-child(1) > span:contains(' + mapped[url].lastResearchCaption + ')', row).length && numberfy($(' > td:nth-child(3)', row).text()) === nextLevel){
+                                    resumeBtn = $('input[onclick*="/' + realm + '/main/unit/view/' + subid + '/project_recreate/"]', row);
+								}
+                            });
+                            if(resumeBtn.length === 1){
+                            	var projectID = resumeBtn.attr('onclick').match(/\/project_recreate\/(\d+)/)[1];
+                                xGet('/' + realm + '/main/unit/view/' + subid + '/project_recreate/' + projectID, "none", true, function () {
+                                    xTypeDone(type);
+                                });
+							} else {
+                                var data2 = "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype + "&level=" + nextLevel + "&create=Invent";
+                                xPost("/" + realm + "/window/unit/view/" + subid + "/project_create", data2, function (resultData) {
+                                    $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+                                    xTypeDone(type);
+                                });
+							}
 						}
-						else{
-							postMessage("Laboratory <a href="+url+">"+subid+"</a> reached the maximum technology level for its size. Could not research the next level.");
+						else {
+							postMessage("Laboratory <a href=" + url + ">" + subid + "</a> reached the maximum technology level for its size. Could not research the next level.");
 							xTypeDone(type);
-						}				
-					});
-				}
-				else{
-					xTypeDone(type);
-				}
+						}
+					}
+					else {
+                        postMessage("Laboratory <a href=" + url + ">" + subid + "</a> reached the maximum technology level for manager qualification. Could not research the next level.");
+						xTypeDone(type);
+					}
+				});
 			});
 		}
-		else if(choice[0] === 1 && mapped[url].isHypothesis && !mapped[url].isBusy){
-			
-			function calcProduct(p, n){
+		else if (choice[0] === 1 && mapped[url].isHypothesis && !mapped[url].isBusy) {
+
+			function calcProduct(p, n) {
 				var value = 1;
 
-				for(var m = 1; m <= n-1; m++){
-					value = value * (1-(1/100*(m-1)+p));
+				for (var m = 1; m <= n - 1; m++) {
+					value = value * (1 - (1 / 100 * (m - 1) + p));
 				}
 				return value;
-			}   
+			}
 
-			function calcStudyTime(p, k){
+			function calcStudyTime(p, k) {
 				//p is possibility between 0 and 1
-				//k is reference time between 0 and +infinite    
+				//k is reference time between 0 and +infinite
 				var value = 0;
 
-				for(var n = 0; n <= 100*(1-p); n++){
-					value += k*(n+1)*(1/100*n+p)*calcProduct(p, n+1);					
+				for (var n = 0; n <= 100 * (1 - p); n++) {
+					value += k * (n + 1) * (1 / 100 * n + p) * calcProduct(p, n + 1);
 				}
 
 				return value;
 			}
+
 			var hypId = mapped[url].hypId;
-			if(mapped[url].curIndex >= 0){
+			if (mapped[url].curIndex >= 0) {
 				//add selected hypothesis id as -1
-                hypId.splice(mapped[url].curIndex, 0, -1);
+				hypId.splice(mapped[url].curIndex, 0, -1);
 			}
 			//["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
 			var favid = -1;
 			var favindex = -1;
-            var lowtime = Infinity;
-            if(choice[1] === 1 || choice[1] === 2 || choice[1] === 3) {
-            	var fastestCount = choice[1];
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    if (fastestCount > 0 || lowtime === mapped[url].time[i]) {
-                        if(lowtime !== mapped[url].time[i]){
-                            lowtime = mapped[url].time[i];
-                            --fastestCount;
-                        }
-                        favid = hypId[i];
-                        favindex = i;
-                    } else {
-                    	break;
+			var lowtime = Infinity;
+			if (choice[1] === 1 || choice[1] === 2 || choice[1] === 3) {
+				var fastestCount = choice[1];
+				for (var i = 0; i < mapped[url].chance.length; i++) {
+					if (fastestCount > 0 || lowtime === mapped[url].time[i]) {
+						if (lowtime !== mapped[url].time[i]) {
+							lowtime = mapped[url].time[i];
+							--fastestCount;
+						}
+						favid = hypId[i];
+						favindex = i;
+					} else {
+						break;
 					}
-                }
-            } else if(choice[1] === 4) {
-            	var prevChance = 0;
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    if (prevChance < mapped[url].chance[i]) {
-                        favid = hypId[i];
-                        favindex = i;
-                    }
-                    prevChance = mapped[url].chance[i];
-                }
+				}
+			} else if (choice[1] === 4) {
+				var prevChance = 0;
+				for (var i = 0; i < mapped[url].chance.length; i++) {
+					if (prevChance < mapped[url].chance[i]) {
+						favid = hypId[i];
+						favindex = i;
+					}
+					prevChance = mapped[url].chance[i];
+				}
 			} else {
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    var studytime = calcStudyTime(mapped[url].chance[i] / 100, mapped[url].time[i]);
-                    if (studytime < lowtime) {
-                        lowtime = studytime;
-                        favid = hypId[i];
-                        favindex = i;
-                    }
-                }
-            }
+				for (var i = 0; i < mapped[url].chance.length; i++) {
+					var studytime = calcStudyTime(mapped[url].chance[i] / 100, mapped[url].time[i]);
+					if (studytime < lowtime) {
+						lowtime = studytime;
+						favid = hypId[i];
+						favindex = i;
+					}
+				}
+			}
 
-			if(mapped[url].curIndex !== favindex){
-				var data = "selectedHypotesis="+favid+"&selectIt=Select+a+hypothesis";
-				xPost(url, data, function(){
-                    $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+			if (mapped[url].curIndex !== favindex) {
+				var data = "selectedHypotesis=" + favid + "&selectIt=Select+a+hypothesis";
+				xPost(url, data, function () {
+					$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
 					xTypeDone(type);
-				});	
+				});
 			}
-			else{
-				xTypeDone(type);				
+			else {
+				xTypeDone(type);
 			}
-			
-		}	
-		else if(choice[0] === 1 && (mapped[url].isAbsent || mapped[url].isFactory)){			
-			xGet(urlUnit, "experimentalunit", false, function(){
-                $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-				
+
+		}
+		else if (choice[0] === 1 && (mapped[url].isAbsent || mapped[url].isFactory)) {
+			xGet(urlUnit, "experimentalunit", false, function () {
+				$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+
 				var effi = [];
 				var contractcount = mapped[urlUnit].id.length;
-				for(var i = 0; i < mapped[urlUnit].id.length; i++){
-					(function(i){
-						xContract(urlForecast, {"unit_id" : mapped[urlUnit].id[i]}, function(data){
-                            $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+				for (var i = 0; i < mapped[urlUnit].id.length; i++) {
+					(function (i) {
+						xContract(urlForecast, {"unit_id": mapped[urlUnit].id[i]}, function (data) {
+							$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
 							effi.push({
-								"id": mapped[urlUnit].id[i], 
-								"efficiency": numberfy(data.productivity), 
+								"id": mapped[urlUnit].id[i],
+								"efficiency": numberfy(data.productivity),
 								"load": numberfy(data.loading)
 							});
 							!--contractcount && post();
-						});			
-					})(i);											
+						});
+					})(i);
 				}
 
-				if(!mapped[urlUnit].id.length){
-					postMessage("There is no factory available to support laboratory <a href="+url+">"+subid+"</a>");
+				if (!mapped[urlUnit].id.length) {
+					postMessage("There is no factory available to support laboratory <a href=" + url + ">" + subid + "</a>");
 					xTypeDone(type);
 				}
-				
-				function post(){
-                    $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-											
+
+				function post() {
+					$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+
 					var efficient = 0;
 					var index = -1;
-					for(var i = 0; i < effi.length; i++){
-						if(efficient < effi[i].efficiency * effi[i].load){
+					for (var i = 0; i < effi.length; i++) {
+						if (efficient < effi[i].efficiency * effi[i].load) {
 							efficient = effi[i].efficiency * effi[i].load;
 							index = i;
 						}
 					}
-					
-					if(index === -1){
-						postMessage("There is no factory available to support laboratory <a href="+url+">"+subid+"</a>");
+
+					if (index === -1) {
+						postMessage("There is no factory available to support laboratory <a href=" + url + ">" + subid + "</a>");
 						xTypeDone(type);
 					}
-					else{
-						var data = "unit="+effi[index].id+"&next=Select";				
-						xPost(urlUnit, data, function(){
-                            $("[id='x"+"Research"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+					else {
+						var data = "unit=" + effi[index].id + "&next=Select";
+						xPost(urlUnit, data, function () {
+							$("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
 							xTypeDone(type);
-						});							
-					}					
-				}				
-			});			
+						});
+					}
+				}
+			});
 		}
-		else{
+		else {
 			xTypeDone(type);
 		}
-		
-		
-	});
+	}
 }
 
 function wareSupply(type, subid, choice, good){
