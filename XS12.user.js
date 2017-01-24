@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.100
+// @version        12.0.101
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.100";
+var version = "12.0.101";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -432,7 +432,7 @@ function map(html, url, page){
 			time : $html.find(".grid td.nowrap:nth-child(4)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			isAbsent : !!$html.find("b[style='color: red']").length,
 			isFactory : !!$html.find("span[style='COLOR: red']").length,
-			unittype : ($html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split(",")[1])) || ($html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').length && $html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').attr('href').match(/\/(\d+)/)[1]),
+			unittype : ($html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').length && $html.find('table.infoblock > tbody > tr:nth-child(1) > td:nth-child(2) > a:nth-child(2)').attr('href').match(/\/(\d+)/)[1]) ||($html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split(",")[1])),
 			industry : $html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split("(")[1]),
 			levelInResearch : numberfy($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2) > span').text()),
             lastResearchCaption : $html.find('table.list > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(1) > span').text(),
