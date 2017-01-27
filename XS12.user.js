@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.101
+// @version        12.0.102
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.101";
+var version = "12.0.102";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -759,26 +759,28 @@ function salePrice(type, subid, choice){
 	var urlReport = [];
 
 	var getcount = 1;
-	xGet(url, "sale", false, function(){
-		!--getcount && phase();
-	});	
 	
-	if(choice[0] >= 3){
-		getcount = getcount + 2;
+	if(choice[0] >= 4){
+        getcount++;
 		xGet(urlTM, "TM", false, function(){
 			!--getcount && phase();
 		});
+	}
+    if(choice[0] === 6 || choice[0] === 7){
+        getcount++;
 		xGet(urlIP, "IP", false, function(){
 			!--getcount && phase();
 		});
-	}
-	
-	if(choice[0] === 4 || choice[0] === 5 || choice[0] === 9 || choice[0] === 10 || choice[0] === 11){
+    }
+    if(choice[0] === 4 || choice[0] === 5 || choice[0] === 9 || choice[0] === 10 || choice[0] === 11){
 		getcount++;
 		xGet(urlTrans, "transport", false, function(){
 			!--getcount && phase();
 		});
 	}
+    xGet(url, "sale", false, function(){
+        !--getcount && phase();
+    });
 	
 	function phase(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
@@ -848,24 +850,17 @@ function salePrice(type, subid, choice){
 				price = 0.01;
 			}
 			else if(choice[0] === 3){
-				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
-				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP] * quality;
-				price = primecost+0.01 < 30 * IP? primecost + 0.01 : primecost;
+				price = primecost + 0.01;
 				price = Math.round(price*100)/100;		
 			}
 			else if(choice[0] === 4){
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
 				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP] * quality;
 				
 				var indexCTIE = mapped[urlCTIE].product.indexOf(product);
 				var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
 				var priceCTIE = primecost * (1 + CTIE/100);
 				price = Math.round(priceCTIE*100)/100;
-				price = price < 30 * IP? price: primecost;
 			}
             else if(choice[0] === 5){
                 var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
@@ -874,14 +869,11 @@ function salePrice(type, subid, choice){
 
                 var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
                 var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-                var indexIP = mapped[urlIP].product.indexOf(product);
-                var IP = mapped[urlIP].IP[indexIP] * quality;
 
                 var indexCTIE = mapped[urlCTIE].product.indexOf(product);
                 var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
                 var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
                 price = Math.round(priceCTIE*100)/100;
-                price = price < 30 * IP ? price : primecost;
             }
             else if(choice[0] === 9){
                 var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
@@ -890,14 +882,11 @@ function salePrice(type, subid, choice){
 
                 var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
                 var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-                var indexIP = mapped[urlIP].product.indexOf(product);
-                var IP = mapped[urlIP].IP[indexIP] * quality;
 
                 var indexCTIE = mapped[urlCTIE].product.indexOf(product);
                 var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
                 var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
                 price = Math.round(priceCTIE * 1.01 * 100)/100;
-                price = price < 30 * IP ? price : primecost;
             }
             else if(choice[0] === 10){
                 var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
@@ -906,14 +895,11 @@ function salePrice(type, subid, choice){
 
                 var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
                 var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-                var indexIP = mapped[urlIP].product.indexOf(product);
-                var IP = mapped[urlIP].IP[indexIP] * quality;
 
                 var indexCTIE = mapped[urlCTIE].product.indexOf(product);
                 var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
                 var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
                 price = Math.round(priceCTIE * 1.05 * 100)/100;
-                price = price < 30 * IP ? price : primecost;
             }
             else if(choice[0] === 11){
                 var indexRegion = mapped[urlTrans].regionName.indexOf(mapped[url].region);
@@ -922,14 +908,11 @@ function salePrice(type, subid, choice){
 
                 var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
                 var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-                var indexIP = mapped[urlIP].product.indexOf(product);
-                var IP = mapped[urlIP].IP[indexIP] * quality;
 
                 var indexCTIE = mapped[urlCTIE].product.indexOf(product);
                 var CTIE = mapped[urlCTIE].CTIE[indexCTIE];
                 var priceCTIE = primecost * (1 + CTIE/100 * mapped["/"+realm+"/main/geo/regionENVD/"+regionId].profitTax/100);
                 price = Math.round(priceCTIE * 1.1 * 100)/100;
-                price = price < 30 * IP ? price : primecost;
             }
 			else if(choice[0] === 6){			
 				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
@@ -945,12 +928,7 @@ function salePrice(type, subid, choice){
 				var IP = mapped[urlIP].IP[indexIP] * quality;
 				price = 30*IP;
 			}
-			else if(choice[0] === 8){								
-				var indexFranchise = mapped[urlTM].franchise.indexOf( mapped[url].product[i] );
-				var product = mapped[urlTM].product[indexFranchise] || mapped[url].product[i];
-				var indexIP = mapped[urlIP].product.indexOf(product);
-				var IP = mapped[urlIP].IP[indexIP] * quality;
-								
+			else if(choice[0] === 8){
 				var favPQR = Infinity;
 				for(var j = 0; j < mapped[urlReport[i]].price.length; j++){
 					var allowed = mapped[urlReport[i]].max[j] === 0 || mapped[urlReport[i]].max[j] * 3 > mapped[urlReport[i]].total[j] - mapped[urlReport[i]].available[j];
@@ -1008,8 +986,7 @@ function salePrice(type, subid, choice){
 					price = Math.max(Math.ceil(highprice * 0.91 * 100)/100, price);
 					price = Math.min(Math.floor(lowprice * 1.09 * 100)/100, price);
 				}
-			
-				price = Math.min(price, 30 * IP);
+
 				price = Math.max(price, primecost);
 				
 			}
@@ -5393,7 +5370,7 @@ function XioScript(){
 
 	//Not user company
 	//unit list
-    if($(".tabu > .sel > a").attr("href").replace('/unit_list','/dashboard') !== $(".dashboard a").attr("href")){
+    if($(".tabu > .sel > a").length === 0 || $(".dashboard a").length === 0 || $(".tabu > .sel > a").attr("href").replace('/unit_list','/dashboard') !== $(".dashboard a").attr("href")){
 		//unit page
 		if($(".officePlace a").attr("href") + "/dashboard" !== $(".dashboard a").attr("href")) {
             console.log('Not user company');
