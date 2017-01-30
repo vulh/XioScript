@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.102
+// @version        12.0.103
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.102";
+var version = "12.0.103";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1736,7 +1736,7 @@ function mobileNetworkOperatorSupply(type, subid, choice){
 
     function post(){
         $("[id='x"+"Supply"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-		//["-", "Zero", "Required +3%", "Remove"]
+		//["-", "Zero", "Required +3%", "Remove", "Required +10%", "Required +30%", "Required +100%"]
         if(choice[0] === 3){
             var data = 'destroy=1';
 
@@ -1759,11 +1759,20 @@ function mobileNetworkOperatorSupply(type, subid, choice){
                 postMessage("Subdivision <a href=" + urlSupply + ">" + subid + "</a> is missing a supplier, or has too many suppliers!");
             }
 
-            //["-", "Zero", "Required +3%", "Remove"]
+            //["-", "Zero", "Required +3%", "Remove", "Required +10%", "Required +30%", "Required +100%"]
             for (var i = 0; i < mapped[urlSupply].parcel.length; i++) {
                 var newsupply = 0;
                 if (choice[0] === 2) {
                     newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.03);
+                }
+                else if (choice[0] === 4) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.1);
+                }
+                else if (choice[0] === 5) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.3);
+                }
+                else if (choice[0] === 6) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 2);
                 }
 
                 if (newsupply > 0 && mapped[urlSupply].available[i] < newsupply) {
@@ -1776,6 +1785,15 @@ function mobileNetworkOperatorSupply(type, subid, choice){
                 var newsupply = 0;
                 if (choice[0] === 2) {
                     newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.03);
+                }
+                else if (choice[0] === 4) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.1);
+                }
+                else if (choice[0] === 5) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 1.3);
+                }
+                else if (choice[0] === 6) {
+                    newsupply = Math.round(mapped[urlMain].prevMobileSold * 2);
                 }
 
                 if (mapped[urlSupply].parcel[i] !== newsupply) {
@@ -4033,8 +4051,8 @@ var policyJSON = {
     },
     sm: {
         func: mobileNetworkOperatorSupply,
-        save: [["-", "Zero", "Required +3%", "Remove"]],
-        order: [["-", "Zero", "Required +3%", "Remove"]],
+        save: [["-", "Zero", "Required +3%", "Remove", "Required +10%", "Required +30%", "Required +100%"]],
+        order: [["-", "Zero", "Required +3%", "Required +10%", "Required +30%", "Required +100%", "Remove"]],
         name: "supplyMobile",
         group: "Supply",
         wait: ["priceMobile"],
