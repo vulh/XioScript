@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.103
+// @version        12.0.104
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.103";
+var version = "12.0.104";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3588,9 +3588,18 @@ function wareSupply(type, subid, choice, good){
 						}
 					}
 				}
+                var mix_sort_type = ls["supply" + mapped[urlMain].productID[i] + realm + subid + "mix_sort_type"] || 'pqr';
 						
 				mix.sort(function(a, b) {
-					return a.PQR - b.PQR;
+					if(mix_sort_type === 'min_price'){
+                        return a.price - b.price;
+					}
+                    else if(mix_sort_type === 'max_quality'){
+                        return b.quality - a.quality;
+                    }
+                    else {
+                        return a.PQR - b.PQR;
+					}
 				});		
 				
 				if(choice[2] === 0){
@@ -3958,6 +3967,15 @@ function wareSupplyShowAdditionSettings(){
     $('table > tbody > tr.p_title > td:nth-child(6)').each(function(){
         var cell = $(this);
         var productID = $('> td.p_title_l > div:nth-child(1) > div:nth-child(2) > a:nth-child(2):has(img)', cell.parent()).attr('href').match(/(step1\/?)\d+/)[0].split("/")[1];
+
+        var mixSortTypeLabel = 'mix sort type';
+        var mixSortTypeEditor = $('<select><option value="pqr">PQR</option><option value="min_price">min price</option><option value="max_quality">max quality</option></select>');
+        mixSortTypeEditor.val(ls["supply" + productID + realm + subid + "mix_sort_type"] || 'pqr');
+        mixSortTypeEditor.change(function(){
+            ls["supply" + productID + realm + subid + "mix_sort_type"] = $(this).val() || 'pqr';
+        });
+
+        cell.prepend('<br>').prepend('<br>').prepend(mixSortTypeEditor).prepend('<br>').prepend(mixSortTypeLabel);
 
         var minResultQualityLabel = 'mix quality';
         var minResultQualityEditor = $('<input type="number" step="0.01" style="width: 50px; text-align: right">');
