@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.105
+// @version        12.0.106
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.105";
+var version = "12.0.106";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -491,7 +491,6 @@ function map(html, url, page){
 			salaryCity : $html.find(".list td:nth-child(8)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			skillWrk : $html.find(".list td:nth-child(9)").map( function(i, e){ return numberfy($(e).text()); }).get(),
 			skillCity : $html.find(".list td:nth-child(10)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			onHoliday : $html.find(".list td:nth-child(11)").map( function(i, e){ return !!$(e).find(".in-holiday").length; }).get(),
 			efficiency : $html.find(".list td:nth-child(11)").map( function(i, e){ return $(e).text().trim(); }).get()
 		};
 	}
@@ -2254,35 +2253,21 @@ function salary(type, subid, choice){
 }
 
 function holiday(type, subid, choice){
-	
-	var url = "/"+realm+"/main/company/view/"+companyid+"/unit_list/employee/salary";
+
 	var urlMain = "/"+realm+"/main/unit/view/"+subid;
 	var urlSupply = "/"+realm+"/main/unit/view/"+subid+"/supply";
 	var urlTrade = "/"+realm+"/main/unit/view/"+subid+"/trading_hall";	
 	
-	var getcount = 2;	
-	xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithHoliday/20000", "none", false, function(){
-		!--getcount && phase();
+	var getcount = 0;
+
+	xGet(urlMain, "main", false, function(){
+		phase();
 	});
-	
-	xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithHoliday/class=0/type=0", "none", false, function(){
-		!--getcount && phase();
-	});
-	
-	if(choice[0] === 3){
-		getcount++;
-		xGet(urlMain, "main", false, function(){
-			!--getcount && phase();
-		});
-	}
 	
 	function phase(){
         $("[id='x"+"Holiday"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
-		getcount++;
-		xGet(url, "employees", false, function(){
-			!--getcount && post();
-		});
-		
+
+        //[["-", "Holiday", "Working", "Stock"]]
 		if(choice[0] === 3 && mapped[urlMain].isStore){
 			getcount ++;			
 			xGet(urlTrade, "tradehall", false, function(){
@@ -2294,7 +2279,9 @@ function holiday(type, subid, choice){
 			xGet(urlSupply, "prodsupply", false, function(){
 				!--getcount && post();
 			});
-		}		
+        } else {
+            post();
+        }
 	}
 	
 	function post(){
@@ -2334,8 +2321,7 @@ function holiday(type, subid, choice){
 			}	
 		}
 
-		var index = mapped[url].id.indexOf(subid);
-		var onHoliday = mapped[url].onHoliday[index];
+		var onHoliday = mapped[urlMain].onHoliday;
 			
 		if(holiday && !onHoliday){
 			xGet("/"+realm+"/main/unit/view/"+subid+"/holiday_set", "none", false, function(){
