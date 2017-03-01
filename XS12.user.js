@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.104
+// @version        12.0.105
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.104";
+var version = "12.0.105";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -4869,7 +4869,7 @@ function XioGenerator(subids){
 
 function XioOverview(){	
 		
-	$(".unit-list-2014").find("td, th").filter(":not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(8))").addClass("XioHide").hide();	
+	$(".unit-list-2014").find("td, th").filter(":not(:nth-child(2)):not(:nth-child(3)):not(:nth-child(7)):not(:nth-child(8))").addClass("XioHide").hide();
 	$(".unit-list-2014 tr.odd").css("backgroundColor", "lightgoldenrodyellow");
 	$(".unit-list-2014 td:nth-child(3) span").remove(); 
 	$(".unit-list-2014").css("white-space", "nowrap").css("user-select", "none");
@@ -5094,47 +5094,6 @@ function XioOverview(){
 		var subid = numberfy($(this).val());		
 		XioMaintenance([subid], undefined);
 	});		
-}
-
-function XioHoliday(){
-	
-	var url = "/"+realm+"/main/company/view/"+companyid+"/unit_list/employee/salary";
-	
-	var getcount = 2;
-	xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithHoliday/20000", "none", false, function(){
-		!--getcount && phase();
-	});
-	var nvClass = $('table.unit-top > tbody > tr > td > a.u-s').first().attr('href').match(/\/class=(\d+)\//)[1] || 0;
-	xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithHoliday/class="+ nvClass +"/type=0", "none", false, function(){
-		!--getcount && phase();
-	});
-	
-	function phase(){
-		xGet(url, "employees", false, function(){			
-			console.log(mapped);
-			
-			var subids = $(".unit-list-2014 td:nth-child(1)").map( function(i, e){ return numberfy($(e).text()); }).get();
-			var $tds = $(".unit-list-2014 tr:gt(0) td:nth-child(2)");
-			
-			for(var i = 0; i < mapped[url].id.length; i++){
-				
-				var index = subids.indexOf(mapped[url].id[i]);
-				
-				if(index === -1){
-					continue;
-				}
-				
-				var eff = mapped[url].efficiency[i];
-				
-				var text = eff === ""? "Holiday" : eff;
-				var color = text === "Holiday" ? "blue" : eff === "100.00 %" ? "green" : "red";
-				
-				$tds.eq(index).append("<br><span style='color:"+color+";'>"+text+"</span>");
-				
-			}
-			
-		});
-	}	
 }
 
 function XioExport(){
@@ -5448,7 +5407,6 @@ function XioScript(){
 		});		
 		
 		if(new RegExp("\/.*\/main\/company\/view\/[0-9]+\/unit_list\/xiooverview").test(document.URL)){
-			XioHoliday();
 			XioOverview();		
 		}		
     }
