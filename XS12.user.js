@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.106
+// @version        12.0.107
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.106";
+var version = "12.0.107";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -196,7 +196,8 @@ function map(html, url, page){
 			reprice : $html.find("td:nth-child(9) table:nth-child(1) tr:nth-child(1) td:nth-child(2)").map( function(i, e){ return !!$(e).find("div").length; }).get(),
 			quality : $html.find("td:nth-child(9) table:nth-child(1) tr:nth-child(2) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
             available : $html.find("td:nth-child(10) table:nth-child(1) tr:nth-child(3) td:nth-child(2)").map( function(i, e){ return numberfy($(e).text()); }).get(),
-			img : $html.find(".noborder td > img").map( function(i, e){ return $(e).attr("src"); }).get()
+			img : $html.find(".noborder td > img").map( function(i, e){ return $(e).attr("src"); }).get(),
+            img_alt : $html.find(".noborder td > img").map( function(i, e){ return $(e).attr("alt"); }).get()
 		}
 	}
     else if(page === "tradehall"){
@@ -1997,6 +1998,10 @@ function storeSupply(type, subid, choice){
             }
             if (newsupply > 0 && mapped[url].available[i] < newsupply) {
                 postMessage("Subdivision (store) <a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                break;
+            }
+            if (mapped[url].sold[i] === 0 && mapped[url].quantity[i] > 0 && mapped[url].quantity[i] !== mapped[url].purchase[i]) {
+                postMessage("Product '" + mapped[url].img_alt[i] + "' did not sold (at store) <a href=" + url + ">" + subid + "</a>");
                 break;
             }
         }
