@@ -2001,7 +2001,7 @@ function storeSupply(type, subid, choice){
                 break;
             }
             if (mapped[url].sold[i] === 0 && mapped[url].quantity[i] > 0 && mapped[url].quantity[i] !== mapped[url].purchase[i]) {
-                postMessage("Product '" + mapped[url].img_alt[i] + "' did not sold (at store) <a href=" + url + ">" + subid + "</a>");
+                postMessage("'" + mapped[url].img_alt[i] + "' did not sold (at store) <a href=" + urlTrade + ">" + subid + "</a>");
                 break;
             }
         }
