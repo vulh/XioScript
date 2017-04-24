@@ -551,6 +551,7 @@ function xGet(url, page, force, callback){
                     xUrlDone(url);
                 } catch (e){
                     console.error(page + ': ' + url);
+                    console.error('regenerate settings for unit may help.');
                     throw e;
                 }
             },
