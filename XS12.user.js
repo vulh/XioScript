@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.108
+// @version        12.0.109
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.108";
+var version = "12.0.109";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -541,13 +541,18 @@ function xGet(url, page, force, callback){
             type: "GET",
 
             success: function(html, status, xhr){
-                time();
-                servergetcount++;
-                $("#XioGetCalls").text(servergetcount);
-                $("#XioServerCalls").text(servergetcount + serverpostcount);
-                map(html, url, page);
-                callback();
-                xUrlDone(url);
+                try {
+                    time();
+                    servergetcount++;
+                    $("#XioGetCalls").text(servergetcount);
+                    $("#XioServerCalls").text(servergetcount + serverpostcount);
+                    map(html, url, page);
+                    callback();
+                    xUrlDone(url);
+                } catch (e){
+                    console.error(page + ': ' + url);
+                    throw e;
+                }
             },
 
             error: function(xhr, status, error){
@@ -565,7 +570,12 @@ function xGet(url, page, force, callback){
     }
     else{
         xcallback.push([url, function(){
-            callback();
+            try {
+                callback();
+            } catch (e){
+                console.error(page + ': ' + url);
+                throw e;
+            }
         }]);
     }
 }
@@ -578,11 +588,16 @@ function xPost(url, form, callback){
         type: "POST",
 
         success: function(html, status, xhr){
-            time();
-            serverpostcount++;
-            $("#XioPostCalls").text(serverpostcount);
-            $("#XioServerCalls").text(servergetcount + serverpostcount);
-            callback(html);
+            try {
+                time();
+                serverpostcount++;
+                $("#XioPostCalls").text(serverpostcount);
+                $("#XioServerCalls").text(servergetcount + serverpostcount);
+                callback(html);
+            } catch (e){
+                console.error(url);
+                throw e;
+            }
         },
 
         error: function(xhr, status, error){
@@ -609,11 +624,16 @@ function xContract(url, data, callback){
         dataType: "JSON",
 
         success: function(data, status, xhr){
-            time();
-            serverpostcount++;
-            $("#XioPostCalls").text(serverpostcount);
-            $("#XioServerCalls").text(servergetcount + serverpostcount);
-            callback(data);
+            try {
+                time();
+                serverpostcount++;
+                $("#XioPostCalls").text(serverpostcount);
+                $("#XioServerCalls").text(servergetcount + serverpostcount);
+                callback(data);
+            } catch (e){
+                console.error(url);
+                throw e;
+            }
         },
 
         error: function(xhr, status, error){
