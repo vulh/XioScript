@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.109
+// @version        12.0.110
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.109";
+var version = "12.0.110";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -769,6 +769,16 @@ var subType = {
     it: [0.08, 0.08, "/img/qualification/it.png"],
     educational: [0.12, 0.12, "/img/qualification/educational.png"]
 };
+
+if(realm.toLowerCase() == 'anna'){
+    //The difference between Anna and other servers is that the qualification of production and mining changed places.
+    var tmpSubTypeMineVal0 = subType.mine[0];
+    var tmpSubTypeMineVal1 = subType.mine[1];
+    subType.mine[0] = subType.workshop[0];
+    subType.mine[1] = subType.workshop[1];
+    subType.workshop[0] = tmpSubTypeMineVal0;
+    subType.workshop[1] = tmpSubTypeMineVal1;
+}
 
 function salePrice(type, subid, choice){
     var url = "/"+realm+"/main/unit/view/"+subid+"/sale";
