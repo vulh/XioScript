@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.110
+// @version        12.0.111
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.110";
+var version = "12.0.111";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -437,7 +437,8 @@ function map(html, url, page){
             industry : $html.find(":button:eq(2)").attr("onclick") && numberfy($html.find(":button:eq(2)").attr("onclick").split("(")[1]),
             levelInResearch : numberfy($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2) > span').text()),
             lastResearchCaption : $html.find('table.list > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(1) > span').text(),
-            resumeBtns : $html.find('div > input[onclick*="project_recreate"]')
+            resumeBtns : $html.find('div > input[onclick*="project_recreate"]'),
+            scientistsRequired : numberfy($html.find('#mainContent > table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2)').text().split('(')[1].replace(/\D+/ig,''))
         }
     }
     else if(page === "experimentalunit"){
@@ -3094,42 +3095,52 @@ function prodBooster(type, subid, choice){
 }
 
 function research(type, subid, choice){
-    var url = "/"+realm+"/main/unit/view/"+subid+"/investigation";
+    var urlResearch = "/"+realm+"/main/unit/view/"+subid+"/investigation";
     var urlProject = "/"+realm+"/window/unit/view/"+subid+"/project_create";
     var urlUnit = "/"+realm+"/window/unit/view/"+subid+"/set_experemental_unit";
     var urlForecast = "/"+realm+"/ajax/unit/forecast";
     var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
+    var urlSalary = "/"+realm+"/window/unit/employees/engage/"+subid;
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
 
-    xGet(url, "research", false, function () {
-        prephase();
+    var getcount = 2;
+    xGet(urlSalary, "salary", true, function(){
+        !--getcount && prephase();
+    });
+    xGet(urlResearch, "research", false, function () {
+        !--getcount && prephase();
     });
 
     function prephase() {
-        if (choice[0] === 1 && mapped[url].isFree) {
+        if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
+            postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
+        }
+
+        if (choice[0] === 1 && mapped[urlResearch].isFree) {
             phase();
         } else {
-            xPost(urlProject, "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype, function (data) {
+            xPost(urlProject, "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype, function (data) {
                 var bvAlreadyResearched = true;
-                //console.log("industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype);
+                //console.log("industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype);
                 //console.log('(\'select[name="level"] > option\').length = ' + $(data).find('select[name="level"] > option').length);
                 if ($(data).find('select[name="level"] > option').length > 0) {
                     $(data).find('select[name="level"] > option').each(function () {
                         var opt = $(this);
                         //console.log('value = ' + parseFloat(opt.attr('value')));
-                        if (mapped[url].levelInResearch === parseFloat(opt.attr('value'))) {
+                        if (mapped[urlResearch].levelInResearch === parseFloat(opt.attr('value'))) {
                             bvAlreadyResearched = false;
                         }
                     });
                 } else {
                     var opt = $(data).find('input[name="level"]');
-                    if (mapped[url].levelInResearch === parseFloat(opt.attr('value'))) {
+                    if (mapped[urlResearch].levelInResearch === parseFloat(opt.attr('value'))) {
                         bvAlreadyResearched = false;
                     }
                 }
                 //console.log('bvAlreadyResearched = ' + bvAlreadyResearched);
                 if (bvAlreadyResearched) {
                     xGet("/" + realm + "/main/unit/view/" + subid + "/project_current_stop", "none", true, function () {
-                        xGet(url, "research", true, function () {
+                        xGet(urlResearch, "research", true, function () {
                             phase();
                         });
                     });
@@ -3143,11 +3154,11 @@ function research(type, subid, choice){
     function phase() {
         $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
 
-        if (choice[0] === 1 && mapped[url].isFree) {
+        if (choice[0] === 1 && mapped[urlResearch].isFree) {
             xGet(urlManager, "manager", false, function () {
                 var managerIndex = mapped[urlManager].pic.indexOf("/img/qualification/research.png");
                 var manager = mapped[urlManager].base[managerIndex] + mapped[urlManager].bonus[managerIndex];
-                xPost(urlProject, "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype, function (data) {
+                xPost(urlProject, "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype, function (data) {
                     $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
                     var nextLevel = 100;
                     if ($(data).find('select[name="level"] > option').length > 0) {
@@ -3161,9 +3172,9 @@ function research(type, subid, choice){
                         var isContinue = !!$(data).find(":submit").length;
                         if (isContinue) {
                             var resumeBtn = [];
-                            mapped[url].resumeBtns.each(function () {
+                            mapped[urlResearch].resumeBtns.each(function () {
                                 var row = $(this).parent().parent().parent();
-                                if($(' > td:nth-child(2) > div:nth-child(1) > span:contains(' + mapped[url].lastResearchCaption + ')', row).length && numberfy($(' > td:nth-child(3)', row).text()) === nextLevel){
+                                if($(' > td:nth-child(2) > div:nth-child(1) > span:contains(' + mapped[urlResearch].lastResearchCaption + ')', row).length && numberfy($(' > td:nth-child(3)', row).text()) === nextLevel){
                                     resumeBtn = $('input[onclick*="/' + realm + '/main/unit/view/' + subid + '/project_recreate/"]', row);
                                 }
                             });
@@ -3173,7 +3184,7 @@ function research(type, subid, choice){
                                     xTypeDone(type);
                                 });
                             } else {
-                                var data2 = "industry=" + mapped[url].industry + "&unit_type=" + mapped[url].unittype + "&level=" + nextLevel + "&create=Invent";
+                                var data2 = "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype + "&level=" + nextLevel + "&create=Invent";
                                 xPost("/" + realm + "/window/unit/view/" + subid + "/project_create", data2, function (resultData) {
                                     $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
                                     xTypeDone(type);
@@ -3181,18 +3192,18 @@ function research(type, subid, choice){
                             }
                         }
                         else {
-                            postMessage("Laboratory <a href=" + url + ">" + subid + "</a> reached the maximum technology level for its size. Could not research the next level.");
+                            postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for its size. Could not research the next level.");
                             xTypeDone(type);
                         }
                     }
                     else {
-                        postMessage("Laboratory <a href=" + url + ">" + subid + "</a> reached the maximum technology level for manager qualification. Could not research the next level.");
+                        postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for manager qualification. Could not research the next level.");
                         xTypeDone(type);
                     }
                 });
             });
         }
-        else if (choice[0] === 1 && mapped[url].isHypothesis && !mapped[url].isBusy) {
+        else if (choice[0] === 1 && mapped[urlResearch].isHypothesis && !mapped[urlResearch].isBusy) {
 
             function calcProduct(p, n) {
                 var value = 1;
@@ -3215,10 +3226,10 @@ function research(type, subid, choice){
                 return value;
             }
 
-            var hypId = mapped[url].hypId;
-            if (mapped[url].curIndex >= 0) {
+            var hypId = mapped[urlResearch].hypId;
+            if (mapped[urlResearch].curIndex >= 0) {
                 //add selected hypothesis id as -1
-                hypId.splice(mapped[url].curIndex, 0, -1);
+                hypId.splice(mapped[urlResearch].curIndex, 0, -1);
             }
             //["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
             var favid = -1;
@@ -3226,10 +3237,10 @@ function research(type, subid, choice){
             var lowtime = Infinity;
             if (choice[1] === 1 || choice[1] === 2 || choice[1] === 3) {
                 var fastestCount = choice[1];
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    if (fastestCount > 0 || lowtime === mapped[url].time[i]) {
-                        if (lowtime !== mapped[url].time[i]) {
-                            lowtime = mapped[url].time[i];
+                for (var i = 0; i < mapped[urlResearch].chance.length; i++) {
+                    if (fastestCount > 0 || lowtime === mapped[urlResearch].time[i]) {
+                        if (lowtime !== mapped[urlResearch].time[i]) {
+                            lowtime = mapped[urlResearch].time[i];
                             --fastestCount;
                         }
                         favid = hypId[i];
@@ -3240,16 +3251,16 @@ function research(type, subid, choice){
                 }
             } else if (choice[1] === 4) {
                 var prevChance = 0;
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    if (prevChance < mapped[url].chance[i]) {
+                for (var i = 0; i < mapped[urlResearch].chance.length; i++) {
+                    if (prevChance < mapped[urlResearch].chance[i]) {
                         favid = hypId[i];
                         favindex = i;
                     }
-                    prevChance = mapped[url].chance[i];
+                    prevChance = mapped[urlResearch].chance[i];
                 }
             } else {
-                for (var i = 0; i < mapped[url].chance.length; i++) {
-                    var studytime = calcStudyTime(mapped[url].chance[i] / 100, mapped[url].time[i]);
+                for (var i = 0; i < mapped[urlResearch].chance.length; i++) {
+                    var studytime = calcStudyTime(mapped[urlResearch].chance[i] / 100, mapped[urlResearch].time[i]);
                     if (studytime < lowtime) {
                         lowtime = studytime;
                         favid = hypId[i];
@@ -3258,9 +3269,9 @@ function research(type, subid, choice){
                 }
             }
 
-            if (mapped[url].curIndex !== favindex) {
+            if (mapped[urlResearch].curIndex !== favindex) {
                 var data = "selectedHypotesis=" + favid + "&selectIt=Select+a+hypothesis";
-                xPost(url, data, function () {
+                xPost(urlResearch, data, function () {
                     $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
                     xTypeDone(type);
                 });
@@ -3270,7 +3281,7 @@ function research(type, subid, choice){
             }
 
         }
-        else if (choice[0] === 1 && (mapped[url].isAbsent || mapped[url].isFactory)) {
+        else if (choice[0] === 1 && (mapped[urlResearch].isAbsent || mapped[urlResearch].isFactory)) {
             xGet(urlUnit, "experimentalunit", false, function () {
                 $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
 
@@ -3291,7 +3302,7 @@ function research(type, subid, choice){
                 }
 
                 if (!mapped[urlUnit].id.length) {
-                    postMessage("There is no factory available to support laboratory <a href=" + url + ">" + subid + "</a>");
+                    postMessage("There is no factory available to support laboratory <a href=" + urlResearch + ">" + subid + "</a>");
                     xTypeDone(type);
                 }
 
@@ -3308,7 +3319,7 @@ function research(type, subid, choice){
                     }
 
                     if (index === -1) {
-                        postMessage("There is no factory available to support laboratory <a href=" + url + ">" + subid + "</a>");
+                        postMessage("There is no factory available to support laboratory <a href=" + urlResearch + ">" + subid + "</a>");
                         xTypeDone(type);
                     }
                     else {
