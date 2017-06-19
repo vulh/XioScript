@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.111
+// @version        12.0.112
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.111";
+var version = "12.0.112";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3103,19 +3103,11 @@ function research(type, subid, choice){
     var urlSalary = "/"+realm+"/window/unit/employees/engage/"+subid;
     var urlMain = "/"+realm+"/main/unit/view/"+subid;
 
-    var getcount = 2;
-    xGet(urlSalary, "salary", true, function(){
-        !--getcount && prephase();
-    });
     xGet(urlResearch, "research", false, function () {
-        !--getcount && prephase();
+        prephase();
     });
 
     function prephase() {
-        if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
-            postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
-        }
-
         if (choice[0] === 1 && mapped[urlResearch].isFree) {
             phase();
         } else {
@@ -3181,13 +3173,13 @@ function research(type, subid, choice){
                             if(resumeBtn.length === 1){
                                 var projectID = resumeBtn.attr('onclick').match(/\/project_recreate\/(\d+)/)[1];
                                 xGet('/' + realm + '/main/unit/view/' + subid + '/project_recreate/' + projectID, "none", true, function () {
-                                    xTypeDone(type);
+                                    postphase();
                                 });
                             } else {
                                 var data2 = "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype + "&level=" + nextLevel + "&create=Invent";
                                 xPost("/" + realm + "/window/unit/view/" + subid + "/project_create", data2, function (resultData) {
                                     $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
-                                    xTypeDone(type);
+                                    postphase();
                                 });
                             }
                         }
@@ -3335,6 +3327,16 @@ function research(type, subid, choice){
         else {
             xTypeDone(type);
         }
+    }
+    function postphase() {
+        xGet(urlResearch, "research", true, function () {
+            xGet(urlSalary, "salary", true, function(){
+                if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
+                    postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
+                }
+                xTypeDone(type);
+            });
+        });
     }
 }
 
