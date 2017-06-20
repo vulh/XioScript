@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.112
+// @version        12.0.113
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.112";
+var version = "12.0.113";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -438,7 +438,7 @@ function map(html, url, page){
             levelInResearch : numberfy($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2) > span').text()),
             lastResearchCaption : $html.find('table.list > tbody > tr:nth-child(2) > td:nth-child(2) > div:nth-child(1) > span').text(),
             resumeBtns : $html.find('div > input[onclick*="project_recreate"]'),
-            scientistsRequired : numberfy($html.find('#mainContent > table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2)').text().split('(')[1].replace(/\D+/ig,''))
+            scientistsRequired : (($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2)').length) ? numberfy($html.find('table.infoblock > tbody > tr:nth-child(2) > td:nth-child(2)').text().split('(')[1].replace(/\D+/ig,'')) : 0)
         }
     }
     else if(page === "experimentalunit"){
@@ -551,7 +551,7 @@ function xGet(url, page, force, callback){
                     callback();
                     xUrlDone(url);
                 } catch (e){
-                    console.error(page + ': ' + url);
+                    console.error(page + ': ' + location.protocol + '//' + location.host + url);
                     console.error('regenerate settings for unit may help.');
                     throw e;
                 }
@@ -597,7 +597,7 @@ function xPost(url, form, callback){
                 $("#XioServerCalls").text(servergetcount + serverpostcount);
                 callback(html);
             } catch (e){
-                console.error(url);
+                console.error(location.protocol + '//' + location.host + url);
                 throw e;
             }
         },
