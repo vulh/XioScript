@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.113
+// @version        12.0.114
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.113";
+var version = "12.0.114";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3160,36 +3160,33 @@ function research(type, subid, choice){
                         var opt = $(data).find('input[name="level"]');
                         nextLevel = parseFloat(opt.attr('value'));
                     }
-                    if (nextLevel < calcTechLevel(manager)) {
-                        var isContinue = !!$(data).find(":submit").length;
-                        if (isContinue) {
-                            var resumeBtn = [];
-                            mapped[urlResearch].resumeBtns.each(function () {
-                                var row = $(this).parent().parent().parent();
-                                if($(' > td:nth-child(2) > div:nth-child(1) > span:contains(' + mapped[urlResearch].lastResearchCaption + ')', row).length && numberfy($(' > td:nth-child(3)', row).text()) === nextLevel){
-                                    resumeBtn = $('input[onclick*="/' + realm + '/main/unit/view/' + subid + '/project_recreate/"]', row);
-                                }
-                            });
-                            if(resumeBtn.length === 1){
-                                var projectID = resumeBtn.attr('onclick').match(/\/project_recreate\/(\d+)/)[1];
-                                xGet('/' + realm + '/main/unit/view/' + subid + '/project_recreate/' + projectID, "none", true, function () {
-                                    postphase();
-                                });
-                            } else {
-                                var data2 = "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype + "&level=" + nextLevel + "&create=Invent";
-                                xPost("/" + realm + "/window/unit/view/" + subid + "/project_create", data2, function (resultData) {
-                                    $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
-                                    postphase();
-                                });
+                    if (nextLevel >= calcTechLevel(manager)) {
+                        postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for manager qualification.");
+                    }
+                    var isContinue = !!$(data).find(":submit").length;
+                    if (isContinue) {
+                        var resumeBtn = [];
+                        mapped[urlResearch].resumeBtns.each(function () {
+                            var row = $(this).parent().parent().parent();
+                            if($(' > td:nth-child(2) > div:nth-child(1) > span:contains(' + mapped[urlResearch].lastResearchCaption + ')', row).length && numberfy($(' > td:nth-child(3)', row).text()) === nextLevel){
+                                resumeBtn = $('input[onclick*="/' + realm + '/main/unit/view/' + subid + '/project_recreate/"]', row);
                             }
-                        }
-                        else {
-                            postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for its size. Could not research the next level.");
-                            xTypeDone(type);
+                        });
+                        if(resumeBtn.length === 1){
+                            var projectID = resumeBtn.attr('onclick').match(/\/project_recreate\/(\d+)/)[1];
+                            xGet('/' + realm + '/main/unit/view/' + subid + '/project_recreate/' + projectID, "none", true, function () {
+                                postphase();
+                            });
+                        } else {
+                            var data2 = "industry=" + mapped[urlResearch].industry + "&unit_type=" + mapped[urlResearch].unittype + "&level=" + nextLevel + "&create=Invent";
+                            xPost("/" + realm + "/window/unit/view/" + subid + "/project_create", data2, function (resultData) {
+                                $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
+                                postphase();
+                            });
                         }
                     }
                     else {
-                        postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for manager qualification. Could not research the next level.");
+                        postMessage("Laboratory <a href=" + urlResearch + ">" + subid + "</a> reached the maximum technology level for its size. Could not research the next level.");
                         xTypeDone(type);
                     }
                 });
@@ -3864,6 +3861,7 @@ function advertisement(type, subid, choice){
 
         var data = "";
         var budget = 0;
+        //save: [["-", "Zero", "Min TV", "Max", "Pop1", "Pop2", "Pop5", "Pop10", "Pop20", "Pop50", "Req"]],
         if(choice[0] === 1){
             data = "cancel=Stop+advertising";
         }
