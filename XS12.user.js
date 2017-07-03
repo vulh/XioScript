@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.114
+// @version        12.0.115
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.114";
+var version = "12.0.115";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -149,7 +149,8 @@ function map(html, url, page){
             reprice : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter(".ordered_red, .ordered_green").length; }).get(),
             mainrow : $html.find(".list tr[onmouseover]").map( function(i, e){ return !!$(e).find("[alt='Select supplier']").length; }).get(),
             nosupplier : $html.find(".list tr[onmouseover]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
-            img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0]
+            img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
+            unit_name : $html.find("#headerInfo > h1").text()
         } : { //old interface
             isProd : !$html.find(".sel").next().attr("class"),
             parcel : $html.find("input[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
@@ -169,7 +170,8 @@ function map(html, url, page){
             reprice : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get(),
             mainrow : $html.find(".list tr[id]").map( function(i, e){ return !/sub/.test($(e).attr("id")); }).get(),
             nosupplier : $html.find(".list tr[id]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
-            img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0]
+            img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
+            unit_name : $html.find("#headerInfo > h1").text()
         }
     }
     else if(page === "consume"){
@@ -407,7 +409,8 @@ function map(html, url, page){
             myself : $html.find("tr:has(input)[class]").map( function(i, e){ return !!$(e).find("strong").length; }).get(),
             contractAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return $(e).attr("href"); }).get(),
             idAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+$/)[0]); }).get(),
-            typeAdd : $html.find(".add_contract img").map( function(i, e){ return $(e).attr("alt"); }).get()
+            typeAdd : $html.find(".add_contract img").map( function(i, e){ return $(e).attr("alt"); }).get(),
+            unit_name : $html.find("#headerInfo > h1").text()
         }
     }
     else if(page === "contract"){
@@ -1898,7 +1901,7 @@ function prodSupply(type, subid, choice){
 
             if (mapped[url].parcel.length !== mapped[url].required.length) {
                 choice[0] = 1;
-                postMessage("Subdivision <a href=" + url + ">" + subid + "</a> is missing a supplier, or has too many suppliers!");
+                postMessage("Subdivision " + mapped[url].unit_name + " <a href=" + url + ">" + subid + "</a> is missing a supplier, or has too many suppliers!");
             }
 
             for (var i = 0; i < mapped[url].parcel.length; i++) {
@@ -1917,7 +1920,7 @@ function prodSupply(type, subid, choice){
                 }
                 if (newsupply > 0 && mapped[url].available[i] < newsupply) {
                     var prodText = (mapped[url].isProd) ? "(production) " : "";
-                    postMessage("Subdivision " + prodText + "<a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
+                    postMessage("Subdivision " + mapped[url].unit_name + " " + prodText + "<a href=" + url + ">" + subid + "</a> has insufficient reserves at the supplier!");
                     break;
                 }
             }
@@ -3541,7 +3544,7 @@ function wareSupply(type, subid, choice, good){
                 }
 
                 if(set > 0){
-                    postMessage("Not enough suppliers for product "+mapped[urlMain].product[i]+" in warehouse <a href="+url+">"+subid+"</a>");
+                    postMessage("Not enough suppliers for product "+mapped[urlMain].product[i]+" in warehouse "+ mapped[url].unit_name +" <a href="+url+">"+subid+"</a>");
                 }
             }
 
@@ -3760,7 +3763,7 @@ function wareSupply(type, subid, choice, good){
 
 
                 if(set > 0){
-                    postMessage("Not enough suppliers for product "+product+" in warehouse <a href="+url+">"+subid+"</a>");
+                    postMessage("Not enough suppliers for product "+product+" in warehouse "+ mapped[url].unit_name + " <a href="+url+">" + subid + "</a>");
                 }
             }
         }
