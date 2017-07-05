@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.115
+// @version        12.0.116
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.115";
+var version = "12.0.116";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1486,7 +1486,7 @@ function servicePrice(type, subid, choice){
 
             price = price.toPrecision(4) || 0;
 
-            var multiplier = [0, 1, 1.1, 1.4, 2];
+            var multiplier = [0, 1, 1.1, 1.4, 2, 3, 4, 5, 6, 7, 8, 9, 10];
             var prime = Math.round(mapped[url2].purch[0] * multiplier[choice[1]]);
             price = Math.max(price, prime);
 
@@ -4091,8 +4091,8 @@ var policyJSON = {
     },
     sc: {
         func: servicePrice,
-        save: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
-        order: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        save: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0", "P x3.0", "P x4.0", "P x5.0", "P x6.0", "P x7.0", "P x8.0", "P x9.0", "P x10.0"]],
+        order: [["-", "Sales", "Turnover", "Profit"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0", "P x3.0", "P x4.0", "P x5.0", "P x6.0", "P x7.0", "P x8.0", "P x9.0", "P x10.0"]],
         name: "priceService",
         group: "Price",
         wait: [],
