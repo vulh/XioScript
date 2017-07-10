@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.116
+// @version        12.0.117
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.116";
+var version = "12.0.117";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3329,12 +3329,31 @@ function research(type, subid, choice){
         }
     }
     function postphase() {
+        // ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
+        // ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
         xGet(urlResearch, "research", true, function () {
             xGet(urlSalary, "salary", true, function(){
-                if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
-                    postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
+                var changed = false;
+                if((choice[2] === 1 || choice[2] === 3) && mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
+                    mapped[urlSalary].form.find("#quantity").val(mapped[urlResearch].scientistsRequired);
+                    postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> worker num changed from " + mapped[urlSalary].employees + " to " + mapped[urlResearch].scientistsRequired + ".");
+                    changed = true;
                 }
-                xTypeDone(type);
+                else if((choice[2] === 2 || choice[2] === 3) && mapped[urlSalary].employees > mapped[urlResearch].scientistsRequired){
+                    mapped[urlSalary].form.find("#quantity").val(mapped[urlResearch].scientistsRequired);
+                    postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> worker num changed from " + mapped[urlSalary].employees + " to " + mapped[urlResearch].scientistsRequired + ".");
+                    changed = true;
+                }
+                if(changed){
+                    xPost(urlSalary, mapped[urlSalary].form.serialize(), function(){
+                        xTypeDone(type);
+                    });
+                } else {
+                    if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
+                        postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
+                    }
+                    xTypeDone(type);
+                }
             });
         });
     }
@@ -4286,8 +4305,14 @@ var policyJSON = {
     },
     rs: {
         func: research,
-        save: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]],
-        order: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]],
+        save: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
+            , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
+            //, ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+        ],
+        order: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
+            , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
+            //, ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+        ],
         name: "research",
         group: "Research",
         wait: [],
