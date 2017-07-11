@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.117
+// @version        12.0.118
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.117";
+var version = "12.0.118";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2448,6 +2448,322 @@ function training(type, subid, choice){
     }
 }
 
+function buyEquipment(type, subid, resultEquipNum, choice){
+
+    var url = "/"+realm+"/window/unit/equipment/"+subid;
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
+    var urlSalary = "/"+realm+"/window/unit/employees/engage/"+subid;
+    var urlManager = "/"+realm+"/main/user/privat/persondata/knowledge";
+    var urlEquipment = "/"+realm+"/main/company/view/"+companyid+"/unit_list/equipment";
+    var urlAnimals = "/"+realm+"/main/company/view/"+companyid+"/unit_list/animals";
+
+    var getcount = 0;
+    var equip = {};
+
+    //"No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"
+    if(choice === 0){
+        xTypeDone(type);
+    }
+
+    getcount += 4;
+    xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithEquipment/20000", "none", false, function(){
+        !--getcount && phase();
+    });
+    xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithEquipment/class=0/type=0", "none", false, function(){
+        !--getcount && phase();
+    });
+    xGet("/"+realm+"/main/common/util/setpaging/dbunit/unitListWithAnimals/20000", "none", false, function(){
+        !--getcount && phase();
+    });
+    xGet("/"+realm+"/main/common/util/setfiltering/dbunit/unitListWithAnimals/class=0/type=0", "none", false, function(){
+        !--getcount && phase();
+    });
+
+    function phase(){
+        getcount += 2;
+        xGet(urlEquipment, "machines", false, function(){
+            !--getcount && phase2();
+        });
+        xGet(urlAnimals, "animals", false, function(){
+            !--getcount && phase2();
+        });
+    }
+
+    function phase2(){
+        for(var i = 0; i < mapped[urlEquipment].subid.length; i++){
+            if(mapped[urlEquipment].subid[i] === subid){
+                for(var key in mapped[urlEquipment]){
+                    equip[key] = mapped[urlEquipment][key][i];
+                }
+                break;
+            }
+        }
+        for(var i = 0; i < mapped[urlAnimals].subid.length; i++){
+            if(mapped[urlAnimals].subid[i] === subid){
+                for(var key in mapped[urlAnimals]){
+                    equip[key] = mapped[urlAnimals][key][i];
+                }
+                equip.perc = 100 - mapped[urlAnimals].perc[i];
+                break;
+            }
+        }
+
+        //"No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"
+        if ((choice === 1 && resultEquipNum > equip.num) || (choice === 2 && resultEquipNum < equip.num) || (choice === 3 && resultEquipNum !== equip.num)){
+            getcount++;
+            xsup.push([subid, equip.id,
+                (function(){
+                    xGet(url, "equipment", true, function(){
+                        if(equipfilter.indexOf(mapped[url].filtername) === -1){
+                            equipfilter.push(mapped[url].filtername);
+                            getcount += 3;
+                            xGet("/"+realm+"/window/common/util/setpaging/db"+mapped[url].filtername+"/equipmentSupplierListByUnit/40000", "none", false, function(){
+                                !(--getcount-1) && xsupGo(subid, equip.id);
+                            });
+                            var data = "total_price%5Bfrom%5D=&total_price%5Bto%5D=&quality%5Bfrom%5D=&quality%5Bto%5D=&quantity%5Bisset%5D=1&quantity%5Bfrom%5D=1&total_price%5Bfrom%5D=0&total_price%5Bto%5D=0&total_price_isset=0&quality%5Bfrom%5D=0&quality%5Bto%5D=0&quality_isset=0&quantity_isset=1";
+                            xPost("/"+realm+"/window/common/util/setfiltering/db"+mapped[url].filtername+"/equipmentSupplierListByUnit", data, function(){
+                                !(--getcount-1) && xsupGo(subid, equip.id);
+                            });
+                            xGet("/"+realm+"/window/common/util/setfiltering/db"+mapped[url].filtername+"/equipmentSupplierListByUnit/supplierType=all", "none", false, function(){
+                                !(--getcount-1) && xsupGo(subid, equip.id);
+                            });
+                            xsup.push([subid, equip.id,	(function(){
+                                xGet(url, "equipment", true, function(){
+                                    !--getcount && post();
+                                });
+                            }) ]);
+                        }
+                        else{
+                            !--getcount && post();
+                        }
+                    });
+                })
+            ]);
+            xsupGo();
+        }
+        else{
+            xTypeDone(type);
+        }
+    }
+
+    function post(){
+        var equipWear = resultEquipNum - equip.num;
+        //console.log('equipWear = ' + equipWear);
+
+        var change = [];
+
+        var offer = {
+            low : [],
+            high : [],
+            inc : []
+        };
+
+        var qualReq = (equip.required || 0) + 0.005;
+        var qualNow = equip.quality - 0.005;
+        // console.log('qualReq = ' + qualReq);
+        // console.log('qualNow = ' + qualNow);
+
+        for(var i = 0; i < mapped[url].offer.length; i++){
+            var data = {
+                PQR : mapped[url].price[i] / mapped[url].qualOffer[i],
+                quality : mapped[url].qualOffer[i],
+                available : mapped[url].available[i],
+                buy : 0,
+                offer : mapped[url].offer[i],
+                index : i
+            };
+            // console.log('data.quality = ' + data.quality );
+            if(data.quality < qualReq){
+                offer.low.push(data);
+            }
+            else{
+                offer.high.push(data);
+            }
+        }
+
+        for(var key in offer){
+            offer[key].sort(function(a, b) {
+                return a.PQR - b.PQR;
+            });
+        }
+
+        var l = 0;
+        var h = 0;
+        var qualEst = 0;
+        var qualNew = qualNow;
+        // console.log('offer.low.length = ' + offer.low.length);
+        // console.log('offer.high.length = ' + offer.high.length);
+
+        while(equipWear > 0 && h < offer.high.length){
+            // console.log('l = ' + l);
+            // console.log('h = ' + h);
+
+            if(offer.low[l] && offer.low[l].length > l && offer.low[l].available - offer.low[l].buy === 0){
+                l++;
+                // console.log('continue l');
+                continue;
+            }
+            if(offer.high[h] && offer.high[h].length > h && offer.high[h].available - offer.high[h].buy === 0){
+                h++;
+                // console.log('continue h');
+                continue;
+            }
+
+            // console.log(subid, l, offer.low[l].available - offer.low[l].buy, offer.low[l]);
+            // console.log(subid, h, offer.high[h].available - offer.high[h].buy, offer.high[h]);
+
+            qualEst = qualNew;
+            l < offer.low.length && offer.low[l].buy++;
+            for(var key in offer){
+                for(var i = 0; i < offer[key].length; i++){
+                    if(offer[key][i].buy){
+                        qualEst = ((equip.num - offer[key][i].buy) * qualEst + offer[key][i].buy * offer[key][i].quality) / equip.num;
+                    }
+                }
+            }
+            l < offer.low.length && offer.low[l].buy--;
+
+            if(l < offer.low.length && qualEst > qualReq && offer.low[l].PQR < offer.high[h].PQR){
+                offer.low[l].buy++;
+            }
+            else{
+                offer.high[h].buy++;
+            }
+
+            equipWear--;
+        }
+
+        for(var key in offer){
+            for(var i = 0; i < offer[key].length; i++){
+                if(offer[key][i].buy){
+                    change.push({
+                        op : "buy",
+                        offer : offer[key][i].offer,
+                        amount : offer[key][i].buy
+                    });
+                    qualNew = ((equip.num - offer[key][i].buy) * qualNew + offer[key][i].buy * offer[key][i].quality) / equip.num;
+                    //console.log('change.buy ' + offer[key][i].buy);
+                }
+            }
+        }
+
+        for(var i = 0; i < mapped[url].offer.length; i++){
+            var data = {
+                PQR : mapped[url].price[i] / (mapped[url].qualOffer[i] - qualReq),
+                quality : mapped[url].qualOffer[i] - 0.005,
+                available : mapped[url].available[i],
+                buy : 0,
+                offer : mapped[url].offer[i],
+                index : i
+            };
+            if(data.quality > qualReq){
+                offer.inc.push(data);
+            }
+        }
+
+        offer.inc.sort(function(a, b) {
+            return a.PQR - b.PQR;
+        });
+
+        var n = 0;
+        qualEst = 0;
+        var torepair = 0;
+        for(var i = 0; i < offer.inc.length; i++){
+            if(offer.inc[i].buy){
+                torepair += offer.inc[i].buy;
+                qualEst += offer.inc[i].buy * offer.inc[i].quality;
+            }
+        }
+        qualEst = (qualEst + (equip.num - torepair) * qualNow) / equip.num;
+
+        while(qualEst < qualReq && n < offer.inc.length){
+
+            if(offer.inc[n] && offer.inc[n].length > n && offer.inc[n].available - offer.inc[n].buy === 0){
+                n++;
+                continue;
+            }
+
+            offer.inc[n].buy++;
+
+            qualEst = 0;
+            torepair = 0;
+            for(var i = 0; i < offer.inc.length; i++){
+                if(offer.inc[i].buy){
+                    torepair += offer.inc[i].buy;
+                    qualEst += offer.inc[i].buy * offer.inc[i].quality;
+                }
+            }
+            qualEst = (qualEst + (equip.num - torepair) * qualNow) / equip.num;
+        }
+
+        //"No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"
+        if((choice === 2 || choice === 3) && resultEquipNum < equip.num){
+            torepair += equip.num - resultEquipNum;
+        }
+        //console.log('change.terminate ' + torepair);
+        if(torepair){
+            change.push({
+                op : "terminate",
+                amount : torepair
+            });
+        }
+
+        for(var i = 0; i < offer.inc.length; i++){
+            if(offer.inc[i].buy){
+                change.push({
+                    op : "buy",
+                    offer : offer.inc[i].offer,
+                    amount : offer.inc[i].buy
+                });
+                //console.log('change.buy ' + offer.inc[i].buy);
+            }
+        }
+
+        if(equipWear > 0 && (h < offer.high.length || n < offer.inc.length)){
+            postMessage("No equipment on the market with a quality higher than required. Could not change subdivision <a href="+url+">"+subid+"</a>");
+        }
+
+
+        var equipcount = change.length;
+        change.length && console.log(subid, change);
+
+        for(var i = 0; i < change.length; i++){
+            xequip.push(
+                (function(i){
+                    xContract("/"+realm+"/ajax/unit/supply/equipment", {
+                            'operation'       : change[i].op,
+                            'offer'  		  : change[i].offer,
+                            'unit'  		  : subid,
+                            'supplier'		  : change[i].offer,
+                            'amount'		  : change[i].amount
+                        },
+                        function(data){
+                            if(xequip.length){
+                                xequip.shift()();
+                            }
+                            else{
+                                fireequip = false;
+                            }
+                            !--equipcount && xTypeDone(type);
+                            !equipcount && xsupGo(subid, equip.id);
+                        });
+                }.bind(this, i))
+            );
+        }
+
+
+        if(xequip.length && !fireequip){
+            fireequip = true;
+            xequip.shift()();
+        }
+        else if(equipcount === 0){
+            xTypeDone(type);
+            xsupGo(subid, equip.id);
+        }
+
+    }
+
+}
 function equipment(type, subid, choice){
 
     var url = "/"+realm+"/window/unit/equipment/"+subid;
@@ -3344,15 +3660,16 @@ function research(type, subid, choice){
                     postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> worker num changed from " + mapped[urlSalary].employees + " to " + mapped[urlResearch].scientistsRequired + ".");
                     changed = true;
                 }
+                var resultEquipNum = mapped[urlResearch].scientistsRequired * 10;
                 if(changed){
                     xPost(urlSalary, mapped[urlSalary].form.serialize(), function(){
-                        xTypeDone(type);
+                        buyEquipment(type, subid, resultEquipNum, choice[3]);
                     });
                 } else {
                     if (mapped[urlSalary].employees < mapped[urlResearch].scientistsRequired){
                         postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> contains fewer(" + mapped[urlSalary].employees + ") scientists than necessary(" + mapped[urlResearch].scientistsRequired + ").");
                     }
-                    xTypeDone(type);
+                    buyEquipment(type, subid, resultEquipNum, choice[3]);
                 }
             });
         });
@@ -4307,11 +4624,11 @@ var policyJSON = {
         func: research,
         save: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
             , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
-            //, ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+            , ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
         ],
         order: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
             , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
-            //, ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+            , ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
         ],
         name: "research",
         group: "Research",
