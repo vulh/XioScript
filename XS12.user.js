@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.119
+// @version        12.0.120
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.119";
+var version = "12.0.120";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -70,6 +70,8 @@ var typedone = [];
 var xwait = [];
 var xequip = [];
 var fireequip = false;
+var xlabequip = [];
+var firelabequip = false;
 var servergetcount = 0;
 var serverpostcount = 0;
 var suppliercount = 0;
@@ -2720,7 +2722,7 @@ function buyEquipment(type, subid, resultEquipNum, choice){
         }
 
         if(equipWear > 0 && (h < offer.high.length || n < offer.inc.length)){
-            postMessage("No equipment on the market with a quality higher than required. Could not change subdivision <a href="+url+">"+subid+"</a>");
+            postMessage("No equipment on the market with a quality higher than required. Could not change subdivision <a href="+urlMain+">"+subid+"</a>");
         }
 
 
@@ -2728,7 +2730,7 @@ function buyEquipment(type, subid, resultEquipNum, choice){
         change.length && console.log(subid, change);
 
         for(var i = 0; i < change.length; i++){
-            xequip.push(
+            xlabequip.push(
                 (function(i){
                     xContract("/"+realm+"/ajax/unit/supply/equipment", {
                             'operation'       : change[i].op,
@@ -2738,11 +2740,11 @@ function buyEquipment(type, subid, resultEquipNum, choice){
                             'amount'		  : change[i].amount
                         },
                         function(data){
-                            if(xequip.length){
-                                xequip.shift()();
+                            if(xlabequip.length){
+                                xlabequip.shift()();
                             }
                             else{
-                                fireequip = false;
+                                firelabequip = false;
                             }
                             !--equipcount && xTypeDone(type);
                             !equipcount && xsupGo(subid, equip.id);
@@ -2752,9 +2754,9 @@ function buyEquipment(type, subid, resultEquipNum, choice){
         }
 
 
-        if(xequip.length && !fireequip){
-            fireequip = true;
-            xequip.shift()();
+        if(xlabequip.length && !firelabequip){
+            firelabequip = true;
+            xlabequip.shift()();
         }
         else if(equipcount === 0){
             xTypeDone(type);
@@ -3067,7 +3069,7 @@ function equipment(type, subid, choice){
             }
 
             if(equipWear > 0 && (h < offer.high.length || n < offer.inc.length)){
-                postMessage("No equipment on the market with a quality higher than required. Could not repair subdivision <a href="+url+">"+subid+"</a>");
+                postMessage("No equipment on the market with a quality higher than required. Could not repair subdivision <a href="+urlMain+">"+subid+"</a>");
             }
 
         }
@@ -3170,10 +3172,10 @@ function equipment(type, subid, choice){
             }
 
             if(equipWear > 0 && l + m < offer.low.length + offer.mid.length){
-                postMessage("No equipment on the market with a quality lower than the maximum quality defined by the Top1. Could not repair subdivision <a href="+url+">"+subid+"</a>");
+                postMessage("No equipment on the market with a quality lower than the maximum quality defined by the Top1. Could not repair subdivision <a href="+urlMain+">"+subid+"</a>");
             }
             else if(equipWear > 0 && m + h < offer.mid.length + offer.high.length){
-                postMessage("No equipment on the market with a quality higher than the current quality. Could not repair subdivision <a href="+url+">"+subid+"</a>");
+                postMessage("No equipment on the market with a quality higher than the current quality. Could not repair subdivision <a href="+urlMain+">"+subid+"</a>");
             }
 
         }
@@ -3215,7 +3217,7 @@ function equipment(type, subid, choice){
             }
 
             if(i === offer.length){
-                postMessage("No equipment on the market with a quality of 2.00. Could not repair subdivision <a href="+url+">"+subid+"</a>");
+                postMessage("No equipment on the market with a quality of 2.00. Could not repair subdivision <a href="+urlMain+">"+subid+"</a>");
             }
 
         }
@@ -3689,14 +3691,14 @@ function research(type, subid, choice){
                         postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> worker num changed from " + mapped[urlSalary].employees + " to " + newWorkerNum + " ("+ multiplierText[multiplierIdx] +").");
                         changed = true;
                     }
+                    var resultEquipNum = newWorkerNum * 10;
                     if (changed) {
                         xPost(urlSalary, mapped[urlSalary].form.serialize(), function () {
-                            var resultEquipNum = newWorkerNum * 10;
                             buyEquipment(type, subid, resultEquipNum, choice[3]);
                         });
                     }
                     else {
-                        xTypeDone(type);
+                        buyEquipment(type, subid, resultEquipNum, choice[3]);
                     }
                 });
             });
@@ -4552,7 +4554,7 @@ var policyJSON = {
         order: [["-", "Zero", "Required", "Stock", "Remove"]],
         name: "supplyProd",
         group: "Supply",
-        wait: ["priceProd", "policy", "tech", "equip"],
+        wait: ["priceProd", "policy", "tech", "equip", "research"],
         showAdditionSettings: blankFunction
     },
     sr: {
@@ -4561,7 +4563,7 @@ var policyJSON = {
         order: [["-", "Zero", "Sold", "Stock", "Amplify", "Enhance"], ["None", "One", "$1 000", "$1 000 000", "Market 1%", "Market 5%", "Market 10%"], ["Any Q", "Local Q", "City Q"]],
         name: "supplyRetail",
         group: "Supply",
-        wait: ["priceProd", "policy"],
+        wait: ["priceProd", "policy", "research"],
         showAdditionSettings: blankFunction
     },
     sh: {
@@ -4576,7 +4578,7 @@ var policyJSON = {
         ],
         name: "supplyWare",
         group: "Supply",
-        wait: ["supplyProd", "supplyRetail"],
+        wait: ["supplyProd", "supplyRetail", "research"],
         showAdditionSettings: wareSupplyShowAdditionSettings
     },
     ad: {
@@ -4694,7 +4696,7 @@ var policyJSON = {
         order: [["-", "Packed", "Full"]],
         name: "size",
         group: "Size",
-        wait: [],
+        wait: ["research"],
         showAdditionSettings: blankFunction
     }
 };
