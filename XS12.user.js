@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.118
+// @version        12.0.119
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.118";
+var version = "12.0.119";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -3581,7 +3581,7 @@ function research(type, subid, choice){
                 var data = "selectedHypotesis=" + favid + "&selectIt=Select+a+hypothesis";
                 xPost(urlResearch, data, function () {
                     $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
-                    xTypeDone(type);
+                    postphaseStage2And3(choice[4]);
                 });
             }
             else {
@@ -3634,7 +3634,7 @@ function research(type, subid, choice){
                         var data = "unit=" + effi[index].id + "&next=Select";
                         xPost(urlUnit, data, function () {
                             $("[id='x" + "Research" + "current']").html('<a href="/' + realm + '/main/unit/view/' + subid + '">' + subid + '</a>');
-                            xTypeDone(type);
+                            postphaseStage2And3(choice[5]);
                         });
                     }
                 }
@@ -3673,6 +3673,37 @@ function research(type, subid, choice){
                 }
             });
         });
+    }
+    function postphaseStage2And3(multiplierIdx) {
+        if(multiplierIdx > 0){
+            //["Stage2: no change worker num", "Stage2: x2 of req worker num", "Stage2: x3 of req worker num"]
+            //["Stage3: no change worker num", "Stage3: x2 of req worker num", "Stage3: x3 of req worker num"]
+            xGet(urlResearch, "research", true, function () {
+                xGet(urlSalary, "salary", true, function () {
+                    var changed = false;
+                    var multiplier = [1, 2, 3];
+                    var multiplierText = ["", "x2", "x3"];
+                    var newWorkerNum = mapped[urlResearch].scientistsRequired * multiplier[multiplierIdx];
+                    if (mapped[urlSalary].employees !== newWorkerNum) {
+                        mapped[urlSalary].form.find("#quantity").val(newWorkerNum);
+                        postMessage("Laboratory <a href=" + urlMain + ">" + subid + "</a> worker num changed from " + mapped[urlSalary].employees + " to " + newWorkerNum + " ("+ multiplierText[multiplierIdx] +").");
+                        changed = true;
+                    }
+                    if (changed) {
+                        xPost(urlSalary, mapped[urlSalary].form.serialize(), function () {
+                            var resultEquipNum = newWorkerNum * 10;
+                            buyEquipment(type, subid, resultEquipNum, choice[3]);
+                        });
+                    }
+                    else {
+                        xTypeDone(type);
+                    }
+                });
+            });
+        }
+        else {
+            xTypeDone(type);
+        }
     }
 }
 
@@ -4623,12 +4654,16 @@ var policyJSON = {
     rs: {
         func: research,
         save: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
-            , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
+            , ["Stage1: no change worker num", "Stage1: change worker num up", "Stage1: change worker num down", "Stage1: change worker num both"]
             , ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+            , ["Stage2: no change worker num", "Stage2: x2 of req worker num", "Stage2: x3 of req worker num"]
+            , ["Stage3: no change worker num", "Stage3: x2 of req worker num", "Stage3: x3 of req worker num"]
         ],
         order: [["-", "Continue"], ["Optimal hypothesis", "First fastest", "Second fastest", "Third fastest", "Most probable"]
-            , ["No change worker num", "Change worker num up", "Change worker num down", "Change worker num both"]
+            , ["Stage1: no change worker num", "Stage1: change worker num up", "Stage1: change worker num down", "Stage1: change worker num both"]
             , ["No change equip num", "Change equip num up", "Change equip num down", "Change equip num both"]
+            , ["Stage2: no change worker num", "Stage2: x2 of req worker num", "Stage2: x3 of req worker num"]
+            , ["Stage3: no change worker num", "Stage3: x2 of req worker num", "Stage3: x3 of req worker num"]
         ],
         name: "research",
         group: "Research",
