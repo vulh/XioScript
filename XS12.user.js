@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.120
+// @version        12.0.121
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.120";
+var version = "12.0.121";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -323,6 +323,7 @@ function map(html, url, page){
             maxEmployees : numberfy($html.find(".unit_box:has(.fa-user) tr:eq(2) td:eq(1)").text()),
             img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
             size : numberfy($html.find("#unitImage img").attr("src").split("_")[1]),
+            extendInProgress : !!$html.find("div[class=\"unit-upgrade-info\"]").length,
             hasBooster : !$html.find("[src='/img/artefact/icons/color/production.gif']").length,
             hasAgitation : !$html.find("[src='/img/artefact/icons/color/politics.gif']").length,
             onHoliday : !!$html.find("[href$=unset]").length,
@@ -4274,6 +4275,40 @@ function advertisement(type, subid, choice){
 
 }
 
+function unitSizeExtend(type, subid, choice){
+
+    var urlMain = "/"+realm+"/main/unit/view/"+subid;
+    var urlSize = "/"+realm+"/window/unit/upgrade/"+subid;
+
+    $("[id='x"+"Size"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+    if(choice[0] === 1){
+        xGet(urlMain, "main", false, function(){
+            if(!mapped[urlMain].extendInProgress){
+                xGet(urlSize, "size", false, function(){
+                    if(mapped[urlSize].id.length > 0){
+                        post();
+                    } else {
+                        xTypeDone(type);
+                    }
+                });
+            } else {
+                xTypeDone(type);
+            }
+        });
+    } else {
+        xTypeDone(type);
+    }
+
+    function post(){
+        $("[id='x"+"Size"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
+
+        xPost("/"+realm+"/window/unit/upgrade/"+subid, "upgrade%5Bbound%5D="+mapped[urlSize].id[0], function(){
+            xTypeDone(type);
+        });
+
+        xTypeDone(type);
+    }
+}
 function wareSize(type, subid, choice){
 
     var url = "/"+realm+"/main/unit/view/"+subid;
@@ -4699,6 +4734,15 @@ var policyJSON = {
         wait: ["research"],
         showAdditionSettings: blankFunction
     }
+    ,ex: {
+        func: unitSizeExtend,
+        save: [["-", "Extend by steps"]],
+        order: [["-", "Extend by steps"]],
+        name: "unitSizeExtend",
+        group: "Size",
+        wait: ["research"],
+        showAdditionSettings: blankFunction
+    },
 };
 
 if(typeof XJSON === "undefined"){
@@ -4917,6 +4961,10 @@ function preferencePages(html, url){
         //Has Solar Panels
         if(/workshop/.test($html.find("#unitImage img").attr("src"))){
             policyArray.push("pb");
+        }
+        //has long extending period
+        if(/animalfarm/.test($html.find("#unitImage img").attr("src")) || /workshop/.test($html.find("#unitImage img").attr("src")) || /lab/.test($html.find("#unitImage img").attr("src"))){
+            policyArray.push("ex");
         }
         //has politic agitation
         if(/villa/.test($html.find("#unitImage img").attr("src"))){
