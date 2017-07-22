@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.121
+// @version        12.0.122
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.121";
+var version = "12.0.122";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -2626,7 +2626,7 @@ function buyEquipment(type, subid, resultEquipNum, choice){
             }
             l < offer.low.length && offer.low[l].buy--;
 
-            if(l < offer.low.length && qualEst > qualReq && offer.low[l].PQR < offer.high[h].PQR){
+            if(l < offer.low.length && qualEst > qualReq ){
                 offer.low[l].buy++;
             }
             else{
