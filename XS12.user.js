@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.123
+// @version        12.0.124
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.122";
+var version = "12.0.124";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -152,7 +152,7 @@ function map(html, url, page){
             mainrow : $html.find(".list tr[onmouseover]").map( function(i, e){ return !!$(e).find("[alt='Select supplier']").length; }).get(),
             nosupplier : $html.find(".list tr[onmouseover]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
             img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
-            unit_name : $html.find("#headerInfo > h1").text()
+            unit_name : $html.find("div.metro_header div.title > h1").text()
         } : { //old interface
             isProd : !$html.find(".sel").next().attr("class"),
             parcel : $html.find("input[name^='supplyContractData[party_quantity]']").map( function(i, e){ return numberfy($(e).val()); }).get(),
@@ -173,7 +173,7 @@ function map(html, url, page){
             mainrow : $html.find(".list tr[id]").map( function(i, e){ return !/sub/.test($(e).attr("id")); }).get(),
             nosupplier : $html.find(".list tr[id]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
             img : $html.find("#unitImage img").attr("src").split("/")[4].split("_")[0],
-            unit_name : $html.find("#headerInfo > h1").text()
+            unit_name : $html.find("div.metro_header div.title > h1").text()
         }
     }
     else if(page === "consume"){
@@ -413,7 +413,7 @@ function map(html, url, page){
             contractAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return $(e).attr("href"); }).get(),
             idAdd : $html.find(".add_contract a:has(img)").map( function(i, e){ return numberfy($(e).attr("href").match(/\d+$/)[0]); }).get(),
             typeAdd : $html.find(".add_contract img").map( function(i, e){ return $(e).attr("alt"); }).get(),
-            unit_name : $html.find("#headerInfo > h1").text()
+            unit_name : $html.find("div.metro_header div.title > h1").text()
         }
     }
     else if(page === "contract"){
