@@ -2,7 +2,7 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.122
+// @version        12.0.123
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
@@ -5831,10 +5831,8 @@ function XioScript(){
     }
 
     //Not user company
-    //unit list
-    if($(".tabu > .sel > a").length === 0 || $(".dashboard a").length === 0 || $(".tabu > .sel > a").attr("href").replace('/unit_list','/dashboard') !== $(".dashboard a").attr("href")){
-        //unit page
-        if($(".officePlace a").attr("href") + "/dashboard" !== $(".dashboard a").attr("href")) {
+    if($(".tabu > .sel > a").length === 0 || $(".dashboard a").length === 0){
+        if($(".tabu > .sel > a").attr("href").replcae('/unit_list', '/dashboard') !== $(".dashboard a").attr("href") && ($(".tabu > li:nth(0) > a").attr("href") + '/dashboard') !== $(".dashboard a").attr("href")) {
             console.log('Not user company');
             return false;
         }
@@ -5847,7 +5845,7 @@ function XioScript(){
     }
 
     //Unit list
-    if(new RegExp("\/.*\/main\/company\/view\/[0-9]+\/unit_list(\/xiooverview)?$").test(document.URL)){
+    if(new RegExp("\/.*\/main\/company\/view\/[0-9]+(\/unit_list(\/xiooverview)?)?$").test(document.URL)){
         console.log('Unit list');
         $("div.metro_header").append("<div style='font-size: 24px; color:gold; margin-bottom: 5px;'>XioScript "+version+"</div>"
             +"<input type=button id=XM class=XioGo value=XioMaintenance>"
