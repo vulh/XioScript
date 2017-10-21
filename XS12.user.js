@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.126
+// @version        12.0.127
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.126";
+var version = "12.0.127";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -88,10 +88,18 @@ var companyid = numberfy($(".dashboard a").attr("href").match(/\d+/)[0]);
 var equipfilter = [];
 
 function getUnitImage(html) {
-    return html.match(/bgunit-(\w+)_/)[1];
+    try{
+        return html.match(/bgunit-(\w+)_/)[1];
+    } catch(e) {
+        return $(html).find("html").html().match(/bgunit-(\w+)_/)[1];
+    }
 }
 function getUnitSize(html) {
-    return html.match(/bgunit-\w+_(\d+)/)[1];
+    try{
+        return html.match(/bgunit-\w+_(\d+)/)[1];
+    } catch(e) {
+        return $(html).find("html").html().match(/bgunit-\w+_(\d+)/)[1];
+    }
 }
 
 function map(html, url, page){
@@ -5839,7 +5847,7 @@ function XioScript(){
 
     //Not user company
     if($(".tabu > .sel > a").length === 0 || $(".dashboard a").length === 0){
-        if($(".tabu > .sel > a").attr("href").replcae('/unit_list', '/dashboard') !== $(".dashboard a").attr("href") && ($(".tabu > li:nth(0) > a").attr("href") + '/dashboard') !== $(".dashboard a").attr("href")) {
+        if($(".tabu > .sel > a").attr("href").replace('/unit_list', '/dashboard') !== $(".dashboard a").attr("href") && ($(".tabu > li:nth(0) > a").attr("href") + '/dashboard') !== $(".dashboard a").attr("href")) {
             console.log('Not user company');
             return false;
         }
