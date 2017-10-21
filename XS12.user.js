@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.125
+// @version        12.0.126
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.125";
+var version = "12.0.126";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -158,7 +158,7 @@ function map(html, url, page){
             reprice : $html.find(".list tr[onmouseover] table:has(a) tr:nth-child(2)").map( function(i, e){ return !!$(e).filter(".ordered_red, .ordered_green").length; }).get(),
             mainrow : $html.find(".list tr[onmouseover]").map( function(i, e){ return !!$(e).find("[alt='Select supplier']").length; }).get(),
             nosupplier : $html.find(".list tr[onmouseover]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
-            img : getUnitImage($html),
+            img : getUnitImage(html),
             unit_name : $html.find("div.metro_header div.title > h1").text()
         } : { //old interface
             isProd : !$html.find(".sel").next().attr("class"),
@@ -179,7 +179,7 @@ function map(html, url, page){
             reprice : $html.find("[id^=totalPrice] tr:nth-child(1)").map( function(i, e){ return !!$(e).filter("[style]").length; }).get(),
             mainrow : $html.find(".list tr[id]").map( function(i, e){ return !/sub/.test($(e).attr("id")); }).get(),
             nosupplier : $html.find(".list tr[id]").map( function(i, e){ return !$(e).find("[src='/img/smallX.gif']").length; }).get(),
-            img : getUnitImage($html),
+            img : getUnitImage(html),
             unit_name : $html.find("div.metro_header div.title > h1").text()
         }
     }
@@ -328,8 +328,8 @@ function map(html, url, page){
             qual : numberfy($html.find(".unit_box:has(.fa-user) tr:eq(1) td:eq(1)").text()),
             techLevel : numberfy($html.find(".unit_box:has(.fa-industry) tr:eq(3) td:eq(1)").text()),
             maxEmployees : numberfy($html.find(".unit_box:has(.fa-user) tr:eq(2) td:eq(1)").text()),
-            img : getUnitImage($html),
-            size : numberfy(getUnitSize($html)),
+            img : getUnitImage(html),
+            size : numberfy(getUnitSize(html)),
             extendInProgress : !!$html.find("div[class=\"unit-upgrade-info\"]").length,
             hasBooster : !$html.find("[src='/img/artefact/icons/color/production.gif']").length,
             hasAgitation : !$html.find("[src='/img/artefact/icons/color/politics.gif']").length,
@@ -387,7 +387,7 @@ function map(html, url, page){
         mapped[url] = {
             price : $html.find("tr td.nowrap:nth-child(2)").map( function(i, e){ return $(e).text().trim(); }).get(),
             tech : $html.find("tr:has([src='/img/v.gif'])").index(),
-            img: getUnitImage($html)
+            img: getUnitImage(html)
         }
     }
     else if(page === "products"){
@@ -4966,15 +4966,15 @@ function preferencePages(html, url){
         }
 
         //Has Solar Panels
-        if(/workshop/.test(getUnitImage($html))){
+        if(/workshop/.test(getUnitImage(html))){
             policyArray.push("pb");
         }
         //has long extending period
-        if(/animalfarm/.test(getUnitImage($html)) || /workshop/.test(getUnitImage($html)) || /lab/.test(getUnitImage($html))){
+        if(/animalfarm/.test(getUnitImage(html)) || /workshop/.test(getUnitImage(html)) || /lab/.test(getUnitImage(html))){
             policyArray.push("ex");
         }
         //has politic agitation
-        if(/villa/.test(getUnitImage($html))){
+        if(/villa/.test(getUnitImage(html))){
             policyArray.push("pa");
         }
         if($html.find("form[name='servicePriceForm']") && $html.find("a[href$='/consume']").length){
