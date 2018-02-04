@@ -1539,7 +1539,7 @@ function retailPrice(type, subid, choice){
     function phase(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
-        if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7 || choice[0] === 8){
+        if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7 || choice[0] === 8, choice[0] === 9){
 
             var getcount = mapped[url].history.length;
 
@@ -1594,6 +1594,13 @@ function retailPrice(type, subid, choice){
 
                 price = priceOld || 0;
                 price = price * (1 - 0.03 * (share < 4.5) + 0.03 * (share > 8) );
+            }
+            else if(choice[0] === 9){
+                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var share = mapped[url].share[i];
+
+                price = priceOld || 0;
+                price = price * (1 - 0.05 * (share < 15) + 0.05 * (share > 20) );
             }
             else if(choice[0] === 3){
                 var priceOld = mapped[mapped[url].history[i]].price[0];
@@ -4591,8 +4598,8 @@ var policyJSON = {
     },
     pt: {
         func: retailPrice,
-        save: [["-", "Zero", "Market 10%", "Turnover", "Stock", "Local", "City", "Sales", "Market 6%"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
-        order: [["-", "Zero", "Market 6%", "Market 10%", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        save: [["-", "Zero", "Market 10%", "Turnover", "Stock", "Local", "City", "Sales", "Market 6%", "Market 20%"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
+        order: [["-", "Zero", "Market 6%", "Market 10%", "Market 20%", "Sales", "Turnover", "Stock", "Local", "City"], ["P x0.0", "P x1.0", "P x1.1", "P x1.4", "P x2.0"]],
         name: "priceRetail",
         group: "Price",
         wait: [],
