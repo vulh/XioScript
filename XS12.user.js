@@ -2,14 +2,14 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.128
+// @version        12.0.129
 // @author		   XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
 // @exclude        http*://virtonomics.wikia.com*
 // ==/UserScript==
 
-var version = "12.0.128";
+var version = "12.0.129";
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -1655,6 +1655,9 @@ function retailPrice(type, subid, choice){
             }
 
             price = price.toPrecision(4) || 0;
+            if(price === 0) {
+                price = calcBaseRetailPrice(myQuality, localPrice, localQuality);
+            }
 
             // отработка опции 2 на ограничение мин цены продажи
             var multiplier = [0, 1, 1.1, 1.4, 2];
