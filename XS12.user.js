@@ -1539,7 +1539,7 @@ function retailPrice(type, subid, choice){
     function phase(){
         $("[id='x"+"Price"+"current']").html('<a href="/'+realm+'/main/unit/view/'+ subid +'">'+ subid +'</a>');
 
-        if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7 || choice[0] === 8, choice[0] === 9){
+        if(choice[0] === 2 || choice[0] === 3 || choice[0] === 4 || choice[0] === 7 || choice[0] === 8 ){
 
             var getcount = mapped[url].history.length;
 
@@ -1550,7 +1550,7 @@ function retailPrice(type, subid, choice){
             }
 
         }
-        else if(choice[0] === 5){
+        else if(choice[0] === 5 || choice[0] === 9){
 
             var getcount = mapped[url].report.length;
 
@@ -1573,11 +1573,10 @@ function retailPrice(type, subid, choice){
 
         var change = false;
         var data = "action=setprice";
-
         for(var i = 0; i < mapped[url].price.length; i++){
 
             var price = 0;
-
+            
             if(choice[0] === 1){
                 price = 0;
             }
@@ -1596,11 +1595,20 @@ function retailPrice(type, subid, choice){
                 price = price * (1 - 0.03 * (share < 4.5) + 0.03 * (share > 8) );
             }
             else if(choice[0] === 9){
-                var priceOld = mapped[mapped[url].history[i]].price[0];
+                var urlReport = mapped[url].report[i];
+                var localPrice = mapped[urlReport].localprice;
+                var localQuality = mapped[urlReport].localquality;
+                var myQuality = mapped[url].quality[i];
                 var share = mapped[url].share[i];
-
-                price = priceOld || 0;
-                price = price * (1 - 0.05 * (share < 15) + 0.05 * (share > 20) );
+                price = mapped[url].price[i];
+                if(price === 0) {
+                    price = calcBaseRetailPrice(myQuality, localPrice, localQuality);
+                } else {
+                   price = price * (1 - 0.05 * (share < 15) + 0.05 * (share > 20) ); 
+                }
+                if (myQuality===0) {
+                    price =0;
+                }
             }
             else if(choice[0] === 3){
                 var priceOld = mapped[mapped[url].history[i]].price[0];
@@ -1665,7 +1673,7 @@ function retailPrice(type, subid, choice){
             price = Math.max(price, prime);
 
             // если нужно изменить цену товара поднимем флаг
-            if(mapped[url].price[i] !== price && price > 0){
+            if(mapped[url].price[i] !== price){
                 change = true;
                 data += "&" + encodeURI(mapped[url].name[i] + "=" + price);
             }
@@ -5690,6 +5698,12 @@ function calcOverflowTop3(employees, qualification, techLevel, factor1, manager)
 
 // расчет стартовой цены продажи в маге исходя из цены и кача местных магов
 function calcBaseRetailPrice(myQuality, localPrice, localQuality) {
+    if(myQuality === 0) {
+        return 0;
+    }
+    if(myQuality > (localQuality+10)) {
+        myQuality=localQuality+10;
+    }
     return Math.max(localPrice * (1 + Math.log(myQuality / localQuality)), 0);
 }
 
