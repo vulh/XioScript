@@ -2,7 +2,7 @@
 // @name           XioScript
 // @namespace      https://github.com/XiozZe/XioScript
 // @description    XioScript with XioMaintenance
-// @version        12.0.129
+// @version        12.0.130
 // @author         XiozZe
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js
 // @include        http*://*virtonomic*.*/*/*
@@ -5152,12 +5152,12 @@ function XioMaintenance(subids, allowedPolicies){
         var startedPolicies = [];
         var xgroup = {};
         for(var i = 0; i < subids.length; i++){
-            if(realsubids.indexOf(subids[i]) === -1){
-                var urlSubid = "/"+realm+"/main/unit/view/"+subids[i];
-                postMessage("Subdivision <a href="+urlSubid+">"+subids[i]+"</a> is missing from the company. Options have been erased from the Local Storage.");
-                ls.removeItem("x"+realm+subids[i]);
-                continue;
-            }
+            //if(realsubids.indexOf(subids[i]) === -1){
+            //    var urlSubid = "/"+realm+"/main/unit/view/"+subids[i];
+            //    postMessage("Subdivision <a href="+urlSubid+">"+subids[i]+"</a> is missing from the company. Options have been erased from the Local Storage.");
+            //    ls.removeItem("x"+realm+subids[i]);
+            //    continue;
+            //}
             var savedPolicyStrings = ls["x"+realm+subids[i]]? ls["x"+realm+subids[i]].split(";") : [];
             for(var j = 0; j < savedPolicyStrings.length; j++){
                 var policy = policyJSON[savedPolicyStrings[j].substring(0, 2)];
